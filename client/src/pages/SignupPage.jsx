@@ -1,0 +1,259 @@
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import api from "../services/api";
+
+function SignupPage() {
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    district: "",
+    taluka: "",
+    city: "",
+    area: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const [otp, setOtp] = useState("");
+  const [step, setStep] = useState("form"); // form -> otp -> done
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSendOtp = async () => {
+    setMessage("");
+    setErrors({});
+    if (!/^[0-9]{10}$/.test(formData.phone)) {
+      setErrors({ phone: "Enter a valid 10-digit phone number" });
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await api.post("/api/auth/send-otp", { phone: formData.phone });
+      setMessage(res.data.message);
+      setStep("otp");
+    } catch (err) {
+      setMessage(err.response?.data?.message || "Failed to send OTP");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    setMessage("");
+    setLoading(true);
+    try {
+      const res = await api.post("/api/auth/verify-otp", {
+        phone: formData.phone,
+        otp,
+      });
+      setMessage(res.data.message);
+      setPhoneVerified(true);
+    } catch (err) {
+      setMessage(err.response?.data?.message || "OTP verification failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage("");
+    setErrors({});
+
+    if (!phoneVerified) {
+      setMessage("Please verify your phone number first");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await api.post("/api/auth/register", formData);
+      setMessage(res.data.message);
+      setStep("done");
+      setTimeout(() => navigate("/login"), 2000);
+    } catch (err) {
+      if (err.response?.data?.errors) {
+        setErrors(err.response.data.errors);
+      } else {
+        setMessage(err.response?.data?.message || "Registration failed");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const inputClass =
+    "w-full px-4 py-3 bg-paper border border-line rounded-lg text-ink placeholder:text-slate/60 focus:outline-none focus:border-ink transition-colors text-sm";
+
+  return (
+    <div className="min-h-screen bg-ink flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-6">
+          <Link to="/" className="font-display text-2xl text-paper">
+            Nagrik<span className="text-signal">.</span>
+          </Link>
+        </div>
+
+        <div className="relative bg-paper rounded-2xl shadow-2xl overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-3 flex justify-center gap-2 pt-1">
+            {Array.from({ length: 18 }).map((_, i) => (
+              <span key={i} className="w-1.5 h-1.5 rounded-full bg-ink/10" />
+            ))}
+          </div>
+
+          <div className="px-8 pt-10 pb-8">
+            <div className="flex items-center justify-between mb-1">
+              <h1 className="font-display text-2xl text-ink">Create your account</h1>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-slate border border-line rounded-full px-2 py-1">
+                Citizen
+              </span>
+            </div>
+            <p className="text-slate text-sm mb-8">Smart Citizen Grievance Management System</p>
+
+            {message && (
+              <div className="mb-5 text-sm bg-ink/5 border border-line rounded-lg px-4 py-3 text-ink">
+                {message}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <input className={inputClass} name="fullName" placeholder="Full name" value={formData.fullName} onChange={handleChange} />
+                {errors.fullName && <p className="text-error text-xs mt-1">{errors.fullName}</p>}
+              </div>
+
+              <div>
+                <input className={inputClass} name="email" type="email" placeholder="Email address" value={formData.email} onChange={handleChange} />
+                {errors.email && <p className="text-error text-xs mt-1">{errors.email}</p>}
+              </div>
+
+              <div>
+                <div className="flex gap-2">
+                  <input
+                    className={inputClass}
+                    name="phone"
+                    placeholder="Mobile number"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    disabled={phoneVerified}
+                  />
+                  {!phoneVerified && (
+                    <button
+                      type="button"
+                      onClick={handleSendOtp}
+                      disabled={loading || step === "otp"}
+                      className="shrink-0 px-4 py-3 bg-ink text-paper rounded-lg text-sm font-medium hover:bg-signal transition-colors disabled:opacity-50"
+                    >
+                      {step === "otp" ? "Sent" : "Send OTP"}
+                    </button>
+                  )}
+                  {phoneVerified && (
+                    <span className="shrink-0 flex items-center gap-1 px-3 py-3 text-success text-sm font-medium -rotate-3">
+                      ✓ Verified
+                    </span>
+                  )}
+                </div>
+                {errors.phone && <p className="text-error text-xs mt-1">{errors.phone}</p>}
+              </div>
+
+              {step === "otp" && !phoneVerified && (
+                <div className="flex gap-2 bg-signal/5 border border-signal/30 rounded-lg p-3">
+                  <input
+                    className={`${inputClass} font-mono tracking-widest`}
+                    placeholder="6-digit code"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleVerifyOtp}
+                    disabled={loading}
+                    className="shrink-0 px-4 py-3 bg-signal text-paper rounded-lg text-sm font-medium hover:bg-signal-dark transition-colors"
+                  >
+                    Verify
+                  </button>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <input className={inputClass} name="district" placeholder="District" value={formData.district} onChange={handleChange} />
+                  {errors.district && <p className="text-error text-xs mt-1">{errors.district}</p>}
+                </div>
+                <div>
+                  <input className={inputClass} name="taluka" placeholder="Taluka" value={formData.taluka} onChange={handleChange} />
+                  {errors.taluka && <p className="text-error text-xs mt-1">{errors.taluka}</p>}
+                </div>
+                <div>
+                  <input className={inputClass} name="city" placeholder="City" value={formData.city} onChange={handleChange} />
+                  {errors.city && <p className="text-error text-xs mt-1">{errors.city}</p>}
+                </div>
+                <div>
+                  <input className={inputClass} name="area" placeholder="Area" value={formData.area} onChange={handleChange} />
+                  {errors.area && <p className="text-error text-xs mt-1">{errors.area}</p>}
+                </div>
+              </div>
+
+              <div>
+                <div className="flex gap-2">
+                  <input
+                    className={inputClass}
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password"
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="shrink-0 px-4 py-3 border border-line rounded-lg text-sm text-slate hover:border-ink transition-colors"
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
+                {errors.password && <p className="text-error text-xs mt-1">{errors.password}</p>}
+              </div>
+
+              <div>
+                <input
+                  className={inputClass}
+                  name="confirmPassword"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Confirm password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                />
+                {errors.confirmPassword && <p className="text-error text-xs mt-1">{errors.confirmPassword}</p>}
+              </div>
+
+              <button
+                type="submit"
+                disabled={!phoneVerified || loading}
+                className="w-full py-3 bg-ink text-paper rounded-lg font-medium hover:bg-signal transition-colors disabled:opacity-40 disabled:cursor-not-allowed mt-2"
+              >
+                {loading ? "Please wait…" : "Create account"}
+              </button>
+            </form>
+
+            <p className="text-center text-sm text-slate mt-6">
+              Already have an account? <Link to="/login" className="text-ink font-medium hover:text-signal">Log in</Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default SignupPage;
