@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { COMPLAINT_STATUS, COMPLAINT_STATUS_LIST } = require("../../shared/constants/complaintStatus");
 
 const complaintSchema = new mongoose.Schema(
   {
@@ -51,12 +52,21 @@ const complaintSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Submitted", "Under Review", "Assigned", "In Progress", "Resolved", "Closed"],
-      default: "Submitted",
+      enum: COMPLAINT_STATUS_LIST,
+      default: COMPLAINT_STATUS.SUBMITTED,
     },
     department: {
       type: String,
       default: null,
+    },
+    assignedEmployee: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Citizen",
+      default: null,
+    },
+    remarks: {
+      type: String,
+      default: "",
     },
   },
   {

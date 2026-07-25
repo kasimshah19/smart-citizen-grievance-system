@@ -16,6 +16,9 @@ import AdminComingSoonPage from "./pages/AdminComingSoonPage";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import AdminRoute from "./components/common/AdminRoute";
 import AdminDepartmentsPage from "./pages/AdminDepartmentsPage";
+import AdminEmployeesPage from "./pages/AdminEmployeesPage";
+import AdminComplaintsPage from "./pages/AdminComplaintsPage";
+import AdminComplaintDetailPage from "./pages/AdminComplaintDetailPage";
 import "./App.css";
 
 function App() {
@@ -106,7 +109,15 @@ function App() {
         path="/admin/complaints"
         element={
           <AdminRoute>
-            <AdminComingSoonPage title="Complaints" />
+            <AdminComplaintsPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/complaints/:id"
+        element={
+          <AdminRoute>
+            <AdminComplaintDetailPage />
           </AdminRoute>
         }
       />
@@ -122,7 +133,7 @@ function App() {
         path="/admin/employees"
         element={
           <AdminRoute>
-            <AdminComingSoonPage title="Employees" />
+            <AdminEmployeesPage />
           </AdminRoute>
         }
       />

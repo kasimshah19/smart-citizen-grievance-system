@@ -9,6 +9,8 @@ const notificationRoutes = require("./modules/notification/notification.routes")
 const supportRoutes = require("./modules/support/support.routes");
 const adminRoutes = require("./modules/admin/admin.routes");
 const departmentRoutes = require("./modules/department/department.routes");
+const employeeRoutes = require("./modules/employee/employee.routes");
+const adminComplaintRoutes = require("./modules/complaint/adminComplaint.routes");
 const path = require("path");
 
 dotenv.config();
@@ -32,6 +34,8 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/support", supportRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/departments", departmentRoutes);
+app.use("/api/employees", employeeRoutes);
+app.use("/api/admin/complaints", adminComplaintRoutes);
 
 const PORT = process.env.PORT || 5000;
 

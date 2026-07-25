@@ -23,22 +23,18 @@ const citizenSchema = new mongoose.Schema(
     },
     district: {
       type: String,
-      required: [true, "District is required"],
       trim: true,
     },
     taluka: {
       type: String,
-      required: [true, "Taluka is required"],
       trim: true,
     },
     city: {
       type: String,
-      required: [true, "City is required"],
       trim: true,
     },
     area: {
       type: String,
-      required: [true, "Area is required"],
       trim: true,
     },
     passwordHash: {
@@ -48,6 +44,10 @@ const citizenSchema = new mongoose.Schema(
     phoneVerified: {
       type: Boolean,
       default: false,
+    },
+    department: {
+      type: String,
+      default: null,
     },
     role: {
       type: String,
