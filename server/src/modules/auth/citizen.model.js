@@ -49,6 +49,10 @@ const citizenSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    active: {
+      type: Boolean,
+      default: true,
+    },
     role: {
       type: String,
       enum: Object.values(ROLES),

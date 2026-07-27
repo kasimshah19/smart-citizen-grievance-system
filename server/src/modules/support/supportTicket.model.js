@@ -23,6 +23,20 @@ const supportTicketSchema = new mongoose.Schema(
       enum: ["Open", "In Progress", "Resolved", "Closed"],
       default: "Open",
     },
+    adminReply: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    repliedAt: {
+      type: Date,
+      default: null,
+    },
+    repliedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Citizen",
+      default: null,
+    },
   },
   {
     timestamps: true,

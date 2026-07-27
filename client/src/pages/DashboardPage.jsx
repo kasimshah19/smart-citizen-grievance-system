@@ -38,6 +38,7 @@ function DashboardPage() {
   const { citizen } = useAuth();
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [announcements, setAnnouncements] = useState([]);
 
   useEffect(() => {
     const fetchSummary = async () => {
@@ -51,6 +52,16 @@ function DashboardPage() {
       }
     };
     fetchSummary();
+
+    const fetchAnnouncements = async () => {
+      try {
+        const res = await api.get("/api/announcements");
+        setAnnouncements(res.data.announcements);
+      } catch (error) {
+        console.error("Failed to load announcements", error);
+      }
+    };
+    fetchAnnouncements();
   }, []);
 
   const today = new Date().toLocaleDateString("en-IN", {
@@ -376,9 +387,20 @@ function DashboardPage() {
               <h2 className="font-display text-base text-ink mb-2">
                 Announcements
               </h2>
-              <p className="text-sm text-slate">
-                No announcements from your municipality at this time.
-              </p>
+              {announcements.length > 0 ? (
+                <div className="space-y-3">
+                  {announcements.map((a) => (
+                    <div key={a._id} className="pb-3 last:pb-0 border-b last:border-0 border-line">
+                      <p className="text-sm font-medium text-ink">{a.title}</p>
+                      <p className="text-xs text-slate mt-0.5">{a.message}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-slate">
+                  No announcements from your municipality at this time.
+                </p>
+              )}
             </div>
 
             {/* Help & Support */}

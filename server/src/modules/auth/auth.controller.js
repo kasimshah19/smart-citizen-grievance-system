@@ -87,7 +87,7 @@ const register = async (req, res) => {
       area,
       passwordHash,
       phoneVerified: true,
-      role: "citizen",
+      role: "Citizen",
     });
 
     await Otp.deleteMany({ phone, purpose: "registration" });
@@ -125,6 +125,13 @@ const loginSendOtp = async (req, res) => {
     const isMatch = await comparePassword(password, citizen.passwordHash);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: "Invalid email or password" });
+    }
+
+    if (citizen.active === false) {
+      return res.status(403).json({
+        success: false,
+        message: "This account has been deactivated. Please contact support.",
+      });
     }
 
     const result = await createAndSendOtp(citizen.phone, "login");

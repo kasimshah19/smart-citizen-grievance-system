@@ -11,6 +11,9 @@ const adminRoutes = require("./modules/admin/admin.routes");
 const departmentRoutes = require("./modules/department/department.routes");
 const employeeRoutes = require("./modules/employee/employee.routes");
 const adminComplaintRoutes = require("./modules/complaint/adminComplaint.routes");
+const adminSupportRoutes = require("./modules/support/adminSupport.routes");
+const announcementRoutes = require("./modules/announcement/announcement.routes");
+const adminAnnouncementRoutes = require("./modules/announcement/adminAnnouncement.routes");
 const path = require("path");
 
 dotenv.config();
@@ -36,6 +39,9 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/admin/complaints", adminComplaintRoutes);
+app.use("/api/admin/support-tickets", adminSupportRoutes);
+app.use("/api/announcements", announcementRoutes);
+app.use("/api/admin/announcements", adminAnnouncementRoutes);
 
 const PORT = process.env.PORT || 5000;
 

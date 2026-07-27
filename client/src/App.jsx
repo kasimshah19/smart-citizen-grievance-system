@@ -19,6 +19,10 @@ import AdminDepartmentsPage from "./pages/AdminDepartmentsPage";
 import AdminEmployeesPage from "./pages/AdminEmployeesPage";
 import AdminComplaintsPage from "./pages/AdminComplaintsPage";
 import AdminComplaintDetailPage from "./pages/AdminComplaintDetailPage";
+import AdminUsersPage from "./pages/AdminUsersPage";
+import AdminSupportTicketsPage from "./pages/AdminSupportTicketsPage";
+import AdminAnnouncementsPage from "./pages/AdminAnnouncementsPage";
+import AdminSettingsPage from "./pages/AdminSettingsPage";
 import "./App.css";
 
 function App() {
@@ -141,7 +145,7 @@ function App() {
         path="/admin/users"
         element={
           <AdminRoute>
-            <AdminComingSoonPage title="Users" />
+            <AdminUsersPage />
           </AdminRoute>
         }
       />
@@ -149,7 +153,7 @@ function App() {
         path="/admin/announcements"
         element={
           <AdminRoute>
-            <AdminComingSoonPage title="Announcements" />
+            <AdminAnnouncementsPage />
           </AdminRoute>
         }
       />
@@ -157,7 +161,7 @@ function App() {
         path="/admin/support-tickets"
         element={
           <AdminRoute>
-            <AdminComingSoonPage title="Support Tickets" />
+            <AdminSupportTicketsPage />
           </AdminRoute>
         }
       />
@@ -173,7 +177,7 @@ function App() {
         path="/admin/settings"
         element={
           <AdminRoute>
-            <AdminComingSoonPage title="Settings" />
+            <AdminSettingsPage />
           </AdminRoute>
         }
       />
