@@ -8,6 +8,8 @@ const {
   getAllCitizens,
   getCitizenDetail,
   toggleCitizenStatus,
+  getAnalytics,
+  adminSearch,
 } = require("./admin.controller");
 
 // Every route here requires a valid token AND the Admin role
@@ -20,5 +22,8 @@ router.get("/dashboard/system-status", getSystemStatus);
 router.get("/users", getAllCitizens);
 router.get("/users/:id", getCitizenDetail);
 router.patch("/users/:id/toggle-status", toggleCitizenStatus);
+
+router.get("/analytics", getAnalytics);
+router.get("/search", adminSearch);
 
 module.exports = router;

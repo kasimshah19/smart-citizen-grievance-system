@@ -22,6 +22,7 @@ import AdminComplaintDetailPage from "./pages/AdminComplaintDetailPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminSupportTicketsPage from "./pages/AdminSupportTicketsPage";
 import AdminAnnouncementsPage from "./pages/AdminAnnouncementsPage";
+import AdminAnalyticsPage from "./pages/AdminAnalyticsPage";
 import AdminSettingsPage from "./pages/AdminSettingsPage";
 import "./App.css";
 
@@ -169,7 +170,7 @@ function App() {
         path="/admin/analytics"
         element={
           <AdminRoute>
-            <AdminComingSoonPage title="Analytics" />
+            <AdminAnalyticsPage />
           </AdminRoute>
         }
       />

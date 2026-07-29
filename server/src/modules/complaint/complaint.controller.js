@@ -74,6 +74,28 @@ const getMyComplaints = async (req, res) => {
   }
 };
 
+// Powers the citizen top nav search bar — quick matches within the citizen's own complaints
+const searchMyComplaints = async (req, res) => {
+  try {
+    const q = req.query.q?.trim();
+    if (!q || q.length < 2) {
+      return res.status(200).json({ success: true, complaints: [] });
+    }
+
+    const complaints = await Complaint.find({
+      citizen: req.citizen._id,
+      $or: [{ complaintNumber: { $regex: q, $options: "i" } }, { title: { $regex: q, $options: "i" } }],
+    })
+      .select("complaintNumber title status")
+      .limit(5);
+
+    return res.status(200).json({ success: true, complaints });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Something went wrong" });
+  }
+};
+
 // Get a single complaint by ID (must belong to the logged-in citizen)
 const getComplaintById = async (req, res) => {
   try {
@@ -108,4 +130,4 @@ const getComplaintHistory = async (req, res) => {
   }
 };
 
-module.exports = { createComplaint, getMyComplaints, getComplaintById, getComplaintHistory };
+module.exports = { createComplaint, getMyComplaints, searchMyComplaints, getComplaintById, getComplaintHistory };

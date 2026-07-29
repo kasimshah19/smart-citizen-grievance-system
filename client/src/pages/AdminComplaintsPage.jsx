@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Eye, Search } from "lucide-react";
 import AdminLayout from "../components/layout/AdminLayout";
 import api from "../services/api";
@@ -19,9 +19,14 @@ const STATUS_COLORS = {
 };
 
 function AdminComplaintsPage() {
+  const [searchParams] = useSearchParams();
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ status: "", priority: "", search: "" });
+  const [filters, setFilters] = useState({
+    status: searchParams.get("status") || "",
+    priority: "",
+    search: "",
+  });
 
   const fetchComplaints = async () => {
     setLoading(true);
@@ -114,6 +119,7 @@ function AdminComplaintsPage() {
                   <th className="px-4 py-3 text-xs text-slate font-medium hidden md:table-cell">Priority</th>
                   <th className="px-4 py-3 text-xs text-slate font-medium">Status</th>
                   <th className="px-4 py-3 text-xs text-slate font-medium hidden lg:table-cell">Department</th>
+                  <th className="px-4 py-3 text-xs text-slate font-medium hidden lg:table-cell">Employee</th>
                   <th className="px-4 py-3 text-xs text-slate font-medium hidden lg:table-cell">Date</th>
                   <th className="px-4 py-3 text-xs text-slate font-medium"></th>
                 </tr>
@@ -131,6 +137,7 @@ function AdminComplaintsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-slate hidden lg:table-cell">{c.department || "—"}</td>
+                    <td className="px-4 py-3 text-slate hidden lg:table-cell">{c.assignedEmployee?.fullName || "—"}</td>
                     <td className="px-4 py-3 text-slate hidden lg:table-cell">
                       {new Date(c.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
                     </td>

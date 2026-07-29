@@ -29,6 +29,7 @@ const getAllComplaints = async (req, res) => {
 
     return res.status(200).json({ success: true, complaints });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ success: false, message: "Something went wrong" });
   }
 };
@@ -50,6 +51,7 @@ const getComplaintByIdAdmin = async (req, res) => {
 
     return res.status(200).json({ success: true, complaint, history });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ success: false, message: "Something went wrong" });
   }
 };
@@ -86,6 +88,7 @@ const assignComplaint = async (req, res) => {
 
     return res.status(200).json({ success: true, message: "Complaint assigned successfully", complaint });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ success: false, message: "Something went wrong" });
   }
 };
@@ -119,6 +122,7 @@ const updateComplaintStatus = async (req, res) => {
 
     return res.status(200).json({ success: true, message: "Status updated successfully", complaint });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ success: false, message: "Something went wrong" });
   }
 };

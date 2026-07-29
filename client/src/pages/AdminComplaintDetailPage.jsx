@@ -24,7 +24,9 @@ function AdminComplaintDetailPage() {
   const [departments, setDepartments] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("success");
 
   const [assignDept, setAssignDept] = useState("");
   const [assignEmployee, setAssignEmployee] = useState("");
@@ -35,21 +37,42 @@ function AdminComplaintDetailPage() {
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const fetchAll = async () => {
+    setLoadError("");
     try {
-      const [detailRes, deptRes, empRes] = await Promise.all([
-        api.get(`/api/admin/complaints/${id}`),
-        api.get("/api/departments"),
-        api.get("/api/employees"),
-      ]);
+      // Fetch the complaint on its own first — this is the critical data for this page.
+      // If department/employee lookups fail, we still want to show the complaint.
+      const detailRes = await api.get(`/api/admin/complaints/${id}`);
       setComplaint(detailRes.data.complaint);
       setHistory(detailRes.data.history);
-      setDepartments(deptRes.data.departments);
-      setEmployees(empRes.data.employees);
       setAssignDept(detailRes.data.complaint.department || "");
       setAssignEmployee(detailRes.data.complaint.assignedEmployee?._id || "");
       setNewStatus(detailRes.data.complaint.status);
+
+      const [deptResult, empResult] = await Promise.allSettled([
+        api.get("/api/departments"),
+        api.get("/api/employees"),
+      ]);
+
+      if (deptResult.status === "fulfilled") {
+        setDepartments(deptResult.value.data.departments);
+      } else {
+        console.error("Failed to load departments", deptResult.reason);
+      }
+
+      if (empResult.status === "fulfilled") {
+        setEmployees(empResult.value.data.employees);
+      } else {
+        console.error("Failed to load employees", empResult.reason);
+      }
     } catch (err) {
       console.error("Failed to load complaint", err);
+      const status = err.response?.status;
+      const serverMessage = err.response?.data?.message;
+      setLoadError(
+        status
+          ? `Error ${status}: ${serverMessage || "Unknown server error"}`
+          : `Network error: ${err.message}`
+      );
     } finally {
       setLoading(false);
     }
@@ -64,6 +87,7 @@ function AdminComplaintDetailPage() {
     e.preventDefault();
     if (!assignDept) {
       setMessage("Please select a department");
+      setMessageType("error");
       return;
     }
     setAssigning(true);
@@ -73,9 +97,11 @@ function AdminComplaintDetailPage() {
         employeeId: assignEmployee || null,
       });
       setMessage("Complaint assigned successfully");
+      setMessageType("success");
       fetchAll();
     } catch (err) {
       setMessage(err.response?.data?.message || "Failed to assign complaint");
+      setMessageType("error");
     } finally {
       setAssigning(false);
     }
@@ -90,10 +116,12 @@ function AdminComplaintDetailPage() {
         remarks: statusRemarks,
       });
       setMessage("Status updated successfully");
+      setMessageType("success");
       setStatusRemarks("");
       fetchAll();
     } catch (err) {
       setMessage(err.response?.data?.message || "Failed to update status");
+      setMessageType("error");
     } finally {
       setUpdatingStatus(false);
     }
@@ -120,6 +148,14 @@ function AdminComplaintDetailPage() {
         <div className="bg-white border border-line rounded-2xl p-10 text-center">
           <AlertCircle size={28} className="text-error mx-auto mb-3" />
           <p className="text-slate text-sm">Complaint not found</p>
+          {loadError && (
+            <p className="text-xs font-mono text-error mt-3 bg-error/5 inline-block px-3 py-2 rounded-lg">
+              {loadError}
+            </p>
+          )}
+          <p className="text-xs text-slate mt-4">
+            Complaint ID: <span className="font-mono">{id}</span>
+          </p>
         </div>
       </AdminLayout>
     );
@@ -138,7 +174,13 @@ function AdminComplaintDetailPage() {
       </Link>
 
       {message && (
-        <div className="mb-5 text-sm bg-ink/5 border border-line rounded-lg px-4 py-3 text-ink">
+        <div
+          className={`mb-5 text-sm border rounded-lg px-4 py-3 ${
+            messageType === "error"
+              ? "bg-error/5 border-error/30 text-error"
+              : "bg-success/5 border-success/30 text-success"
+          }`}
+        >
           {message}
         </div>
       )}
@@ -210,7 +252,17 @@ function AdminComplaintDetailPage() {
 
           {/* Assign section */}
           <div className="bg-white border border-line rounded-2xl p-6">
-            <h2 className="font-display text-lg text-ink mb-4">Assign Complaint</h2>
+            <h2 className="font-display text-lg text-ink mb-1">Assign Complaint</h2>
+            {complaint.department ? (
+              <p className="text-xs text-slate mb-4">
+                Currently assigned to <span className="text-ink font-medium">{complaint.department}</span>
+                {complaint.assignedEmployee?.fullName && (
+                  <> · <span className="text-ink font-medium">{complaint.assignedEmployee.fullName}</span></>
+                )}
+              </p>
+            ) : (
+              <p className="text-xs text-slate mb-4">Not assigned to any department yet</p>
+            )}
             <form onSubmit={handleAssign} className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
@@ -232,7 +284,7 @@ function AdminComplaintDetailPage() {
                 <div>
                   <label className="block text-sm text-ink mb-1.5">Employee (optional)</label>
                   <select
-                    className={inputClass}
+                    className={`${inputClass} disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-line/30`}
                     value={assignEmployee}
                     onChange={(e) => setAssignEmployee(e.target.value)}
                     disabled={!assignDept}
@@ -242,6 +294,11 @@ function AdminComplaintDetailPage() {
                       <option key={emp._id} value={emp._id}>{emp.fullName}</option>
                     ))}
                   </select>
+                  {!assignDept ? (
+                    <p className="text-xs text-slate mt-1.5">Select a department first to see its employees</p>
+                  ) : filteredEmployees.length === 0 ? (
+                    <p className="text-xs text-slate mt-1.5">No employees in this department yet</p>
+                  ) : null}
                 </div>
               </div>
               <button

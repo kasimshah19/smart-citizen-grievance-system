@@ -1,4 +1,5 @@
 const Complaint = require("../complaint/complaint.model");
+const ComplaintHistory = require("../complaint/complaintHistory.model");
 const Citizen = require("../auth/citizen.model");
 const SupportTicket = require("../support/supportTicket.model");
 const Department = require("../department/department.model");
@@ -194,6 +195,109 @@ const toggleCitizenStatus = async (req, res) => {
   }
 };
 
+// Aggregated data for the Admin Analytics page — category/department/status/priority
+// breakdowns, a 6-month trend, and average resolution time
+const getAnalytics = async (req, res) => {
+  try {
+    const complaints = await Complaint.find().select("category department status priority createdAt");
+
+    const tally = (getKey) => {
+      const map = {};
+      complaints.forEach((c) => {
+        const key = getKey(c) || "Unassigned";
+        map[key] = (map[key] || 0) + 1;
+      });
+      return Object.entries(map).map(([name, value]) => ({ name, value }));
+    };
+
+    const byCategory = tally((c) => c.category);
+    const byDepartment = tally((c) => c.department);
+    const byStatus = tally((c) => c.status);
+    const byPriority = tally((c) => c.priority);
+
+    // Last 6 months, oldest to newest, filled with zero so empty months still show
+    const monthlyMap = {};
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      monthlyMap[d.toLocaleDateString("en-US", { month: "short", year: "2-digit" })] = 0;
+    }
+    complaints.forEach((c) => {
+      const key = new Date(c.createdAt).toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+      if (key in monthlyMap) monthlyMap[key] += 1;
+    });
+    const monthlyTrend = Object.entries(monthlyMap).map(([month, count]) => ({ month, count }));
+
+    // Average resolution time, in days, based on each complaint's first "Resolved" history entry
+    const resolvedComplaints = complaints.filter((c) => ["Resolved", "Closed"].includes(c.status));
+    let avgResolutionDays = null;
+
+    if (resolvedComplaints.length > 0) {
+      const resolutionEntries = await ComplaintHistory.find({
+        complaint: { $in: resolvedComplaints.map((c) => c._id) },
+        status: "Resolved",
+      }).sort({ createdAt: 1 });
+
+      const firstResolvedAt = {};
+      resolutionEntries.forEach((entry) => {
+        const key = entry.complaint.toString();
+        if (!firstResolvedAt[key]) firstResolvedAt[key] = entry.createdAt;
+      });
+
+      const durations = resolvedComplaints
+        .filter((c) => firstResolvedAt[c._id.toString()])
+        .map((c) => (firstResolvedAt[c._id.toString()] - c.createdAt) / (1000 * 60 * 60 * 24));
+
+      if (durations.length > 0) {
+        avgResolutionDays = Math.round((durations.reduce((a, b) => a + b, 0) / durations.length) * 10) / 10;
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      analytics: {
+        byCategory,
+        byDepartment,
+        byStatus,
+        byPriority,
+        monthlyTrend,
+        avgResolutionDays,
+        totalComplaints: complaints.length,
+        resolvedCount: resolvedComplaints.length,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Something went wrong" });
+  }
+};
+
+// Powers the top nav search bar — quick matches across complaints and citizens
+const adminSearch = async (req, res) => {
+  try {
+    const q = req.query.q?.trim();
+    if (!q || q.length < 2) {
+      return res.status(200).json({ success: true, complaints: [], citizens: [] });
+    }
+
+    const regex = { $regex: q, $options: "i" };
+
+    const [complaints, citizens] = await Promise.all([
+      Complaint.find({ $or: [{ complaintNumber: regex }, { title: regex }] })
+        .select("complaintNumber title status")
+        .limit(5),
+      Citizen.find({ role: ROLES.CITIZEN, $or: [{ fullName: regex }, { email: regex }] })
+        .select("fullName email")
+        .limit(5),
+    ]);
+
+    return res.status(200).json({ success: true, complaints, citizens });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Something went wrong" });
+  }
+};
+
 module.exports = {
   getDashboardSummary,
   getRecentComplaints,
@@ -201,4 +305,6 @@ module.exports = {
   getAllCitizens,
   getCitizenDetail,
   toggleCitizenStatus,
+  getAnalytics,
+  adminSearch,
 };

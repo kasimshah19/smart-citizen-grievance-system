@@ -20,8 +20,8 @@ const complaintHistorySchema = new mongoose.Schema(
     },
     performedBy: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: "Citizen",
       required: true,
-      refPath: "performerRole",
     },
     performerRole: {
       type: String,

@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import {
   ClipboardList,
   CalendarClock,
   Clock,
@@ -20,6 +31,8 @@ import {
 import AdminLayout from "../components/layout/AdminLayout";
 import api from "../services/api";
 
+const CHART_COLORS = { signal: "#C1552C", ink: "#142330", slate: "#5B6B74", line: "#DEDACD" };
+
 const STATUS_COLORS = {
   Submitted: "bg-slate/10 text-slate",
   "Under Review": "bg-signal/10 text-signal",
@@ -33,19 +46,22 @@ function AdminDashboardPage() {
   const [kpis, setKpis] = useState(null);
   const [recentComplaints, setRecentComplaints] = useState([]);
   const [systemStatus, setSystemStatus] = useState(null);
+  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [summaryRes, recentRes, statusRes] = await Promise.all([
+        const [summaryRes, recentRes, statusRes, analyticsRes] = await Promise.all([
           api.get("/api/admin/dashboard/summary"),
           api.get("/api/admin/dashboard/recent-complaints"),
           api.get("/api/admin/dashboard/system-status"),
+          api.get("/api/admin/analytics"),
         ]);
         setKpis(summaryRes.data.summary.kpis);
         setRecentComplaints(recentRes.data.complaints);
         setSystemStatus(statusRes.data.status);
+        setAnalytics(analyticsRes.data.analytics);
       } catch (error) {
         console.error("Failed to load admin dashboard", error);
       } finally {
@@ -94,23 +110,93 @@ function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Charts placeholders */}
+        {/* Charts */}
         <div>
-          <h2 className="font-display text-lg text-ink mb-3">Analytics</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-display text-lg text-ink">Analytics</h2>
+            <Link
+              to="/admin/analytics"
+              className="text-xs text-signal hover:text-signal-dark flex items-center gap-1"
+            >
+              Full analytics <ArrowRight size={12} />
+            </Link>
+          </div>
           <div className="grid lg:grid-cols-2 gap-4">
-            {[
-              "Complaints by Category",
-              "Complaints by Department",
-              "Monthly Complaints",
-              "Average Resolution Time",
-            ].map((chartTitle) => (
-              <div key={chartTitle} className="bg-white border border-line rounded-2xl p-5">
-                <p className="text-sm font-medium text-ink mb-4">{chartTitle}</p>
+            <div className="bg-white border border-line rounded-2xl p-5">
+              <p className="text-sm font-medium text-ink mb-4">Complaints by Category</p>
+              {loading || !analytics?.byCategory?.length ? (
                 <div className="h-40 rounded-lg bg-ink/5 flex items-center justify-center">
-                  <p className="text-xs text-slate">Chart data will appear here</p>
+                  <p className="text-xs text-slate">{loading ? "Loading…" : "No complaint data yet"}</p>
                 </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={160}>
+                  <BarChart data={analytics.byCategory}>
+                    <CartesianGrid stroke={CHART_COLORS.line} vertical={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 9, fill: CHART_COLORS.slate }} axisLine={{ stroke: CHART_COLORS.line }} interval={0} angle={-20} textAnchor="end" height={40} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: CHART_COLORS.slate }} axisLine={{ stroke: CHART_COLORS.line }} width={24} />
+                    <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: `1px solid ${CHART_COLORS.line}` }} />
+                    <Bar dataKey="value" fill={CHART_COLORS.signal} radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            <div className="bg-white border border-line rounded-2xl p-5">
+              <p className="text-sm font-medium text-ink mb-4">Complaints by Department</p>
+              {loading || !analytics?.byDepartment?.length ? (
+                <div className="h-40 rounded-lg bg-ink/5 flex items-center justify-center">
+                  <p className="text-xs text-slate">{loading ? "Loading…" : "No complaint data yet"}</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={160}>
+                  <BarChart data={analytics.byDepartment}>
+                    <CartesianGrid stroke={CHART_COLORS.line} vertical={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 9, fill: CHART_COLORS.slate }} axisLine={{ stroke: CHART_COLORS.line }} interval={0} angle={-20} textAnchor="end" height={40} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: CHART_COLORS.slate }} axisLine={{ stroke: CHART_COLORS.line }} width={24} />
+                    <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: `1px solid ${CHART_COLORS.line}` }} />
+                    <Bar dataKey="value" fill={CHART_COLORS.ink} radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            <div className="bg-white border border-line rounded-2xl p-5">
+              <p className="text-sm font-medium text-ink mb-4">Monthly Complaints</p>
+              {loading || !analytics?.monthlyTrend?.length ? (
+                <div className="h-40 rounded-lg bg-ink/5 flex items-center justify-center">
+                  <p className="text-xs text-slate">{loading ? "Loading…" : "No complaint data yet"}</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={160}>
+                  <LineChart data={analytics.monthlyTrend}>
+                    <CartesianGrid stroke={CHART_COLORS.line} vertical={false} />
+                    <XAxis dataKey="month" tick={{ fontSize: 10, fill: CHART_COLORS.slate }} axisLine={{ stroke: CHART_COLORS.line }} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: CHART_COLORS.slate }} axisLine={{ stroke: CHART_COLORS.line }} width={24} />
+                    <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: `1px solid ${CHART_COLORS.line}` }} />
+                    <Line type="monotone" dataKey="count" stroke={CHART_COLORS.signal} strokeWidth={2} dot={{ r: 3 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            <div className="bg-white border border-line rounded-2xl p-5">
+              <p className="text-sm font-medium text-ink mb-4">Average Resolution Time</p>
+              <div className="h-40 rounded-lg bg-ink/5 flex flex-col items-center justify-center">
+                {loading ? (
+                  <p className="text-xs text-slate">Loading…</p>
+                ) : analytics?.avgResolutionDays !== null ? (
+                  <>
+                    <p className="font-display text-4xl text-ink">{analytics.avgResolutionDays}</p>
+                    <p className="text-xs text-slate mt-1">days on average</p>
+                    <p className="text-[10px] text-slate/60 mt-2">
+                      Based on {analytics.resolvedCount} resolved complaint{analytics.resolvedCount === 1 ? "" : "s"}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-xs text-slate">No resolved complaints yet</p>
+                )}
               </div>
-            ))}
+            </div>
           </div>
         </div>
 

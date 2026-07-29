@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Search,
   ChevronLeft,
@@ -23,13 +24,14 @@ const TICKET_STATUS_COLORS = {
 };
 
 function AdminSupportTicketsPage() {
+  const [searchParams] = useSearchParams();
   const [tickets, setTickets] = useState([]);
   const [openCount, setOpenCount] = useState(0);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState(searchParams.get("status") || "");
   const [page, setPage] = useState(1);
 
   const [expandedId, setExpandedId] = useState(null);
