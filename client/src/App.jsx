@@ -24,6 +24,11 @@ import AdminSupportTicketsPage from "./pages/AdminSupportTicketsPage";
 import AdminAnnouncementsPage from "./pages/AdminAnnouncementsPage";
 import AdminAnalyticsPage from "./pages/AdminAnalyticsPage";
 import AdminSettingsPage from "./pages/AdminSettingsPage";
+import EmployeeRoute from "./components/common/EmployeeRoute";
+import EmployeeDashboardPage from "./pages/EmployeeDashboardPage";
+import EmployeeComplaintsPage from "./pages/EmployeeComplaintsPage";
+import EmployeeComplaintDetailPage from "./pages/EmployeeComplaintDetailPage";
+import EmployeeProfilePage from "./pages/EmployeeProfilePage";
 import "./App.css";
 
 function App() {
@@ -180,6 +185,40 @@ function App() {
           <AdminRoute>
             <AdminSettingsPage />
           </AdminRoute>
+        }
+      />
+
+      {/* Employee Portal */}
+      <Route
+        path="/employee"
+        element={
+          <EmployeeRoute>
+            <EmployeeDashboardPage />
+          </EmployeeRoute>
+        }
+      />
+      <Route
+        path="/employee/complaints"
+        element={
+          <EmployeeRoute>
+            <EmployeeComplaintsPage />
+          </EmployeeRoute>
+        }
+      />
+      <Route
+        path="/employee/complaints/:id"
+        element={
+          <EmployeeRoute>
+            <EmployeeComplaintDetailPage />
+          </EmployeeRoute>
+        }
+      />
+      <Route
+        path="/employee/profile"
+        element={
+          <EmployeeRoute>
+            <EmployeeProfilePage />
+          </EmployeeRoute>
         }
       />
     </Routes>

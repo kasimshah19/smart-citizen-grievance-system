@@ -175,6 +175,8 @@ const loginVerifyOtp = async (req, res) => {
         fullName: citizen.fullName,
         email: citizen.email,
         phone: citizen.phone,
+        role: citizen.role,
+        department: citizen.department,
       },
     });
   } catch (error) {

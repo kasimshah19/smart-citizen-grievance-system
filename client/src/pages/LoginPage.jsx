@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
+import { ROLES } from "../shared/constants/roles";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ function LoginPage() {
     }
   };
 
-  // STEP 2: Verify OTP, get JWT, redirect
+  // STEP 2: Verify OTP, get JWT, redirect based on role
   const handleOtpSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
@@ -40,7 +41,13 @@ function LoginPage() {
       const res = await api.post("/api/auth/login/verify-otp", { email, otp });
       login(res.data.citizen, res.data.token);
       setMessage(res.data.message);
-      setTimeout(() => navigate("/dashboard"), 1000);
+
+      const role = res.data.citizen.role;
+      let redirectPath = "/dashboard";
+      if (role === ROLES.ADMIN) redirectPath = "/admin";
+      else if (role === ROLES.EMPLOYEE) redirectPath = "/employee";
+
+      setTimeout(() => navigate(redirectPath), 1000);
     } catch (err) {
       setMessage(err.response?.data?.message || "OTP verification failed");
     } finally {
