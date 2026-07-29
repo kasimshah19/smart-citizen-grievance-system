@@ -1,13 +1,13 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, ClipboardList, User, LogOut } from "lucide-react";
+import { LayoutDashboard, ClipboardList, User, Settings, LogOut } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 
 const menuItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/employee" },
   { label: "My Assigned Complaints", icon: ClipboardList, path: "/employee/complaints" },
   { label: "Profile", icon: User, path: "/employee/profile" },
+  { label: "Settings", icon: Settings, path: "/employee/settings" },
 ];
-
 function EmployeeSidebar({ open, onClose }) {
   const { citizen, logout } = useAuth();
 

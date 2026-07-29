@@ -29,6 +29,7 @@ import EmployeeDashboardPage from "./pages/EmployeeDashboardPage";
 import EmployeeComplaintsPage from "./pages/EmployeeComplaintsPage";
 import EmployeeComplaintDetailPage from "./pages/EmployeeComplaintDetailPage";
 import EmployeeProfilePage from "./pages/EmployeeProfilePage";
+import EmployeeSettingsPage from "./pages/EmployeeSettingsPage";
 import "./App.css";
 
 function App() {
@@ -218,6 +219,14 @@ function App() {
         element={
           <EmployeeRoute>
             <EmployeeProfilePage />
+          </EmployeeRoute>
+        }
+      />
+      <Route
+        path="/employee/settings"
+        element={
+          <EmployeeRoute>
+            <EmployeeSettingsPage />
           </EmployeeRoute>
         }
       />
