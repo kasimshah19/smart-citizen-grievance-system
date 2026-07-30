@@ -10,6 +10,7 @@ const {
   getMe,
   updateProfile,
   changePassword,
+  updateNotificationPreferences,
 } = require("./auth.controller");
 
 router.post("/send-otp", sendRegistrationOtp);
@@ -22,5 +23,6 @@ router.post("/login/verify-otp", loginVerifyOtp);
 router.get("/me", protect, getMe);
 router.put("/me", protect, updateProfile);
 router.put("/change-password", protect, changePassword);
+router.put("/notification-preferences", protect, updateNotificationPreferences);
 
 module.exports = router;

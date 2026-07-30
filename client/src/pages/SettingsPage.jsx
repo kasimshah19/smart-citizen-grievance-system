@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Lock, Bell, Eye, EyeOff, Shield } from "lucide-react";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import api from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 
 function SettingsPage() {
+  const { citizen, updateCitizen } = useAuth();
+
   const [passwords, setPasswords] = useState({
     currentPassword: "",
     newPassword: "",
@@ -19,13 +22,30 @@ function SettingsPage() {
     emailUpdates: true,
     statusChanges: true,
   });
+  const [savingPrefs, setSavingPrefs] = useState(false);
+
+  useEffect(() => {
+    if (citizen?.notificationPreferences) {
+      setNotifPrefs(citizen.notificationPreferences);
+    }
+  }, [citizen]);
 
   const handlePasswordChange = (e) => {
     setPasswords({ ...passwords, [e.target.name]: e.target.value });
   };
 
-  const handleToggle = (key) => {
-    setNotifPrefs({ ...notifPrefs, [key]: !notifPrefs[key] });
+  const handleToggle = async (key) => {
+    const updated = { ...notifPrefs, [key]: !notifPrefs[key] };
+    setNotifPrefs(updated);
+    setSavingPrefs(true);
+    try {
+      const res = await api.put("/api/auth/notification-preferences", updated);
+      updateCitizen(res.data.citizen);
+    } catch (err) {
+      setNotifPrefs(notifPrefs);
+    } finally {
+      setSavingPrefs(false);
+    }
   };
 
   const handleChangePassword = async (e) => {
@@ -146,9 +166,12 @@ function SettingsPage() {
 
         {/* Notification Preferences */}
         <div className="bg-white border border-line rounded-2xl p-6">
-          <div className="flex items-center gap-2 mb-1">
-            <Bell size={18} className="text-ink" />
-            <h2 className="font-display text-lg text-ink">Notification Preferences</h2>
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <Bell size={18} className="text-ink" />
+              <h2 className="font-display text-lg text-ink">Notification Preferences</h2>
+            </div>
+            {savingPrefs && <span className="text-xs text-slate">Saving…</span>}
           </div>
           <p className="text-slate text-sm mb-5">Choose how you'd like to be notified about updates.</p>
 
@@ -179,9 +202,6 @@ function SettingsPage() {
               </div>
             ))}
           </div>
-          <p className="text-xs text-slate mt-4 pt-4 border-t border-line">
-            Note: Preferences are saved locally for now. Full notification delivery will be available once the Notifications module is complete.
-          </p>
         </div>
 
         {/* Account Security Info */}

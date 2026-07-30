@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { Inbox, ChevronRight } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
+import { Inbox, ChevronRight, Search } from "lucide-react";
 import EmployeeLayout from "../components/layout/EmployeeLayout";
 import api from "../services/api";
 
@@ -12,14 +12,19 @@ const STATUS_COLORS = {
 };
 
 function EmployeeComplaintsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState(searchParams.get("status") || "");
+  const [searchInput, setSearchInput] = useState(searchParams.get("search") || "");
 
   const fetchComplaints = async () => {
     setLoading(true);
     try {
-      const params = statusFilter ? { status: statusFilter } : {};
+      const params = {};
+      if (statusFilter) params.status = statusFilter;
+      if (searchParams.get("search")) params.search = searchParams.get("search");
+
       const res = await api.get("/api/employee/complaints", { params });
       setComplaints(res.data.complaints);
     } catch (error) {
@@ -32,23 +37,43 @@ function EmployeeComplaintsPage() {
   useEffect(() => {
     fetchComplaints();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter]);
+  }, [statusFilter, searchParams]);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const params = {};
+    if (searchInput.trim()) params.search = searchInput.trim();
+    if (statusFilter) params.status = statusFilter;
+    setSearchParams(params);
+  };
 
   return (
     <EmployeeLayout breadcrumb="My Assigned Complaints">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <h1 className="font-display text-2xl text-ink">My Assigned Complaints</h1>
-        <select
-          className="px-3 py-2 bg-white border border-line rounded-lg text-ink text-sm focus:outline-none focus:border-ink"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="">All Statuses</option>
-          <option value="Assigned">Assigned</option>
-          <option value="Accepted">Accepted</option>
-          <option value="In Progress">In Progress</option>
-          <option value="Resolved">Resolved</option>
-        </select>
+        <div className="flex gap-3">
+          <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 bg-white border border-line rounded-lg px-3 py-2">
+            <Search size={15} className="text-slate" />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="bg-transparent text-sm outline-none w-full placeholder:text-slate/60"
+            />
+          </form>
+          <select
+            className="px-3 py-2 bg-white border border-line rounded-lg text-ink text-sm focus:outline-none focus:border-ink"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="">All Statuses</option>
+            <option value="Assigned">Assigned</option>
+            <option value="Accepted">Accepted</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Resolved">Resolved</option>
+          </select>
+        </div>
       </div>
 
       {loading ? (

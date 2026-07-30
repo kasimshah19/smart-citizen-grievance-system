@@ -1,15 +1,42 @@
-import { useState } from "react";
-import { Menu, Bell, ChevronDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Menu, Search, Bell, ChevronDown } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import api from "../../services/api";
 
 function EmployeeTopNav({ onMenuClick, breadcrumb }) {
   const { citizen, logout } = useAuth();
+  const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    const fetchPending = async () => {
+      try {
+        const res = await api.get("/api/employee/dashboard/summary");
+        setPendingCount(res.data.summary.stats.pending || 0);
+      } catch (error) {
+        console.error("Failed to load pending count", error);
+      }
+    };
+    fetchPending();
+  }, []);
 
   const handleLogout = () => {
     logout();
     window.location.href = "/";
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/employee/complaints?search=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
+
+  const handleBellClick = () => {
+    navigate("/employee/complaints?status=Assigned");
   };
 
   const initials = citizen?.fullName
@@ -29,11 +56,25 @@ function EmployeeTopNav({ onMenuClick, breadcrumb }) {
           <p className="text-xs text-slate font-mono uppercase tracking-wide">{breadcrumb || "Employee"}</p>
           <h1 className="font-display text-lg text-ink">Employee Portal</h1>
         </div>
+
+        <form onSubmit={handleSearchSubmit} className="hidden md:flex items-center gap-2 bg-white border border-line rounded-full px-4 py-2 max-w-xs flex-1 ml-4">
+          <Search size={16} className="text-slate" />
+          <input
+            type="text"
+            placeholder="Search assigned complaints..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="bg-transparent text-sm outline-none w-full placeholder:text-slate/60"
+          />
+        </form>
       </div>
 
       <div className="flex items-center gap-3">
-        <button className="relative p-2 rounded-full hover:bg-ink/5">
+        <button onClick={handleBellClick} className="relative p-2 rounded-full hover:bg-ink/5" title="Pending complaints">
           <Bell size={20} className="text-ink" />
+          {pendingCount > 0 && (
+            <span className="absolute top-1 right-1 w-2 h-2 bg-signal rounded-full" />
+          )}
         </button>
 
         <div className="relative">
@@ -61,6 +102,13 @@ function EmployeeTopNav({ onMenuClick, breadcrumb }) {
                   onClick={() => setDropdownOpen(false)}
                 >
                   My Profile
+                </Link>
+                <Link
+                  to="/employee/settings"
+                  className="block px-4 py-2 text-sm text-ink hover:bg-ink/5"
+                  onClick={() => setDropdownOpen(false)}
+                >
+                  Settings
                 </Link>
                 <button
                   onClick={handleLogout}

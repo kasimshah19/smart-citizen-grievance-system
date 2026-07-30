@@ -12,14 +12,24 @@ const EMPLOYEE_ALLOWED_STATUSES = [
 // List complaints assigned to the logged-in employee
 const getMyAssignedComplaints = async (req, res) => {
   try {
-    const { status } = req.query;
+    const { status, search } = req.query;
 
     const filter = { assignedEmployee: req.citizen._id };
     if (status) filter.status = status;
 
-    const complaints = await Complaint.find(filter)
+    let complaints = await Complaint.find(filter)
       .sort({ createdAt: -1 })
       .populate("citizen", "fullName email phone");
+
+    if (search) {
+      const term = search.toLowerCase();
+      complaints = complaints.filter(
+        (c) =>
+          c.complaintNumber.toLowerCase().includes(term) ||
+          c.title.toLowerCase().includes(term) ||
+          c.citizen?.fullName?.toLowerCase().includes(term)
+      );
+    }
 
     return res.status(200).json({ success: true, complaints });
   } catch (error) {

@@ -257,6 +257,31 @@ const changePassword = async (req, res) => {
   }
 };
 
+// Update the logged-in citizen's notification preferences
+const updateNotificationPreferences = async (req, res) => {
+  try {
+    const { smsUpdates, emailUpdates, statusChanges } = req.body;
+
+    const updates = {};
+    if (smsUpdates !== undefined) updates["notificationPreferences.smsUpdates"] = smsUpdates;
+    if (emailUpdates !== undefined) updates["notificationPreferences.emailUpdates"] = emailUpdates;
+    if (statusChanges !== undefined) updates["notificationPreferences.statusChanges"] = statusChanges;
+
+    const citizen = await Citizen.findByIdAndUpdate(req.citizen._id, updates, {
+      new: true,
+      runValidators: true,
+    }).select("-passwordHash");
+
+    return res.status(200).json({
+      success: true,
+      message: "Notification preferences updated",
+      citizen,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Something went wrong. Please try again." });
+  }
+};
+
 module.exports = {
   sendRegistrationOtp,
   verifyRegistrationOtp,
@@ -266,4 +291,5 @@ module.exports = {
   getMe,
   updateProfile,
   changePassword,
+  updateNotificationPreferences,
 };

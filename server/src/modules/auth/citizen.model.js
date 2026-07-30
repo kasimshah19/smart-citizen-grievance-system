@@ -49,6 +49,11 @@ const citizenSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    notificationPreferences: {
+      smsUpdates: { type: Boolean, default: true },
+      emailUpdates: { type: Boolean, default: true },
+      statusChanges: { type: Boolean, default: true },
+    },
     active: {
       type: Boolean,
       default: true,
