@@ -116,6 +116,12 @@ function LoginPage() {
                 </button>
               </div>
 
+              <div className="text-right">
+                <Link to="/forgot-password" className="text-xs text-slate hover:text-signal transition-colors">
+                  Forgot password?
+                </Link>
+              </div>
+
               <button
                 type="submit"
                 disabled={loading}

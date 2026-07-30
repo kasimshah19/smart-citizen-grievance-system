@@ -11,6 +11,8 @@ const {
   updateProfile,
   changePassword,
   updateNotificationPreferences,
+  forgotPasswordSendOtp,
+  resetPassword,
 } = require("./auth.controller");
 
 router.post("/send-otp", sendRegistrationOtp);
@@ -19,6 +21,9 @@ router.post("/register", register);
 
 router.post("/login/send-otp", loginSendOtp);
 router.post("/login/verify-otp", loginVerifyOtp);
+
+router.post("/forgot-password/send-otp", forgotPasswordSendOtp);
+router.post("/forgot-password/reset", resetPassword);
 
 router.get("/me", protect, getMe);
 router.put("/me", protect, updateProfile);

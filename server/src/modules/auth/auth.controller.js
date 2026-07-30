@@ -282,6 +282,73 @@ const updateNotificationPreferences = async (req, res) => {
   }
 };
 
+// FORGOT PASSWORD — STEP 1: Look up the account by email, send OTP to its registered phone
+const forgotPasswordSendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email?.trim()) {
+      return res.status(400).json({ success: false, message: "Email is required" });
+    }
+
+    const citizen = await Citizen.findOne({ email: email.trim().toLowerCase() });
+    if (!citizen) {
+      return res.status(404).json({ success: false, message: "No account found with this email" });
+    }
+
+    const result = await createAndSendOtp(citizen.phone, "forgot-password");
+
+    // Mask the phone number so the UI can show "OTP sent to XXXXXX1234" without exposing the full number
+    const maskedPhone = citizen.phone.slice(-4).padStart(citizen.phone.length, "X");
+
+    return res.status(200).json({ success: true, message: result.message, maskedPhone });
+  } catch (error) {
+    console.error(error);
+    return res.status(400).json({ success: false, message: error.message || "Something went wrong" });
+  }
+};
+
+// FORGOT PASSWORD — STEP 2: Verify the OTP and set the new password in one step
+const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword, confirmPassword } = req.body;
+
+    if (!email?.trim() || !otp?.trim() || !newPassword) {
+      return res.status(400).json({ success: false, message: "Email, OTP, and new password are all required" });
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_\-+=]).{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 8 characters and include uppercase, lowercase, number, and special character",
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ success: false, message: "Passwords do not match" });
+    }
+
+    const citizen = await Citizen.findOne({ email: email.trim().toLowerCase() });
+    if (!citizen) {
+      return res.status(404).json({ success: false, message: "No account found with this email" });
+    }
+
+    // Throws if the OTP is missing, expired, wrong, or over the attempt limit
+    await verifyOtp(citizen.phone, "forgot-password", otp.trim());
+
+    citizen.passwordHash = await hashPassword(newPassword);
+    await citizen.save();
+
+    // Clean up so the used OTP can't be replayed
+    await Otp.deleteMany({ phone: citizen.phone, purpose: "forgot-password" });
+
+    return res.status(200).json({ success: true, message: "Password reset successfully. You can now log in." });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message || "Something went wrong" });
+  }
+};
+
 module.exports = {
   sendRegistrationOtp,
   verifyRegistrationOtp,
@@ -292,4 +359,6 @@ module.exports = {
   updateProfile,
   changePassword,
   updateNotificationPreferences,
+  forgotPasswordSendOtp,
+  resetPassword,
 };
