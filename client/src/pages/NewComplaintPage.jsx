@@ -280,7 +280,9 @@ function NewComplaintPage() {
                   onClick={() => setFormData({ ...formData, priority: level })}
                   className={`flex-1 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
                     formData.priority === level
-                      ? "bg-ink text-paper border-ink"
+                      ? level === "Emergency"
+                        ? "bg-error text-paper border-error"
+                        : "bg-ink text-paper border-ink"
                       : "border-line text-ink hover:border-ink"
                   }`}
                 >

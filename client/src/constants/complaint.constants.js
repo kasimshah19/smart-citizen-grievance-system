@@ -8,7 +8,7 @@ export const COMPLAINT_CATEGORIES = [
   "Other",
 ];
 
-export const PRIORITY_LEVELS = ["Low", "Medium", "High"];
+export const PRIORITY_LEVELS = ["Low", "Medium", "High", "Emergency"];
 
 export const STATUS_COLORS = {
   Submitted: "bg-slate/10 text-slate",
