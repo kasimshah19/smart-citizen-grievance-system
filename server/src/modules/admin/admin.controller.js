@@ -298,6 +298,34 @@ const adminSearch = async (req, res) => {
   }
 };
 
+// Returns complaints that have GPS coordinates, for the Admin Map View
+const getComplaintsForMap = async (req, res) => {
+  try {
+    const complaints = await Complaint.find({
+      "location.latitude": { $ne: null },
+      "location.longitude": { $ne: null },
+    })
+      .select("complaintNumber title category status priority location createdAt")
+      .sort({ createdAt: -1 });
+
+    const points = complaints.map((c) => ({
+      id: c._id,
+      complaintNumber: c.complaintNumber,
+      title: c.title,
+      category: c.category,
+      status: c.status,
+      priority: c.priority,
+      latitude: c.location.latitude,
+      longitude: c.location.longitude,
+      address: c.location.address,
+    }));
+
+    return res.status(200).json({ success: true, points });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Something went wrong" });
+  }
+};
+
 module.exports = {
   getDashboardSummary,
   getRecentComplaints,
@@ -307,4 +335,5 @@ module.exports = {
   toggleCitizenStatus,
   getAnalytics,
   adminSearch,
+  getComplaintsForMap,
 };

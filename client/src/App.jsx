@@ -25,6 +25,7 @@ import AdminSupportTicketsPage from "./pages/AdminSupportTicketsPage";
 import AdminAnnouncementsPage from "./pages/AdminAnnouncementsPage";
 import AdminAnalyticsPage from "./pages/AdminAnalyticsPage";
 import AdminSettingsPage from "./pages/AdminSettingsPage";
+import AdminMapPage from "./pages/AdminMapPage";
 import EmployeeRoute from "./components/common/EmployeeRoute";
 import EmployeeDashboardPage from "./pages/EmployeeDashboardPage";
 import EmployeeComplaintsPage from "./pages/EmployeeComplaintsPage";
@@ -131,6 +132,14 @@ function App() {
         element={
           <AdminRoute>
             <AdminComplaintDetailPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/map"
+        element={
+          <AdminRoute>
+            <AdminMapPage />
           </AdminRoute>
         }
       />

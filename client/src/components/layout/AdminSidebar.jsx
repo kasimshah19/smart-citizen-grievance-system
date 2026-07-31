@@ -10,12 +10,14 @@ import {
   BarChart3,
   Settings,
   LogOut,
+  Map,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 
 const menuItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/admin" },
   { label: "Complaints", icon: FileText, path: "/admin/complaints" },
+  { label: "Complaint Map", icon: Map, path: "/admin/map" },
   { label: "Departments", icon: Building2, path: "/admin/departments" },
   { label: "Employees", icon: UserCog, path: "/admin/employees" },
   { label: "Users", icon: Users, path: "/admin/users" },
