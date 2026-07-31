@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, MapPin, Calendar, Tag, AlertCircle, Clock } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar, Tag, AlertCircle, Clock, Radio } from "lucide-react";
 import DashboardLayout from "../components/layout/DashboardLayout";
-import api from "../services/api";
+import api, { API_BASE_URL } from "../services/api";
+import { connectSocket } from "../services/socket";
 import { STATUS_COLORS } from "../constants/complaint.constants";
 
 function ComplaintDetailPage() {
@@ -11,23 +12,45 @@ function ComplaintDetailPage() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [justUpdated, setJustUpdated] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      const [complaintRes, historyRes] = await Promise.all([
+        api.get(`/api/complaints/${id}`),
+        api.get(`/api/complaints/${id}/history`),
+      ]);
+      setComplaint(complaintRes.data.complaint);
+      setHistory(historyRes.data.history);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to load complaint");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [complaintRes, historyRes] = await Promise.all([
-          api.get(`/api/complaints/${id}`),
-          api.get(`/api/complaints/${id}/history`),
-        ]);
-        setComplaint(complaintRes.data.complaint);
-        setHistory(historyRes.data.history);
-      } catch (err) {
-        setError(err.response?.data?.message || "Failed to load complaint");
-      } finally {
-        setLoading(false);
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  // Live updates: if the admin changes this complaint while we're looking at
+  // it, refresh automatically instead of making the citizen hit reload.
+  useEffect(() => {
+    const socket = connectSocket();
+    if (!socket) return;
+
+    const handleUpdate = (payload) => {
+      if (payload.complaintId === id) {
+        fetchData();
+        setJustUpdated(true);
+        setTimeout(() => setJustUpdated(false), 3000);
       }
     };
-    fetchData();
+
+    socket.on("complaint:updated", handleUpdate);
+    return () => socket.off("complaint:updated", handleUpdate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   if (loading) {
@@ -57,7 +80,7 @@ function ComplaintDetailPage() {
     );
   }
 
-  const photoUrl = complaint.photoUrl ? `http://localhost:5000${complaint.photoUrl}` : null;
+  const photoUrl = complaint.photoUrl ? `${API_BASE_URL}${complaint.photoUrl}` : null;
 
   return (
     <DashboardLayout>
@@ -82,6 +105,11 @@ function ComplaintDetailPage() {
               <span className={`text-xs px-2.5 py-0.5 rounded-full ${STATUS_COLORS[complaint.status]}`}>
                 {complaint.status}
               </span>
+              {justUpdated && (
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-success/10 text-success flex items-center gap-1">
+                  <Radio size={11} /> Updated just now
+                </span>
+              )}
             </div>
 
             <h1 className="font-display text-2xl text-ink mb-2">{complaint.title}</h1>

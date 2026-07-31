@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, MapPin, Calendar, Tag, AlertCircle, Clock, UserCog } from "lucide-react";
 import AdminLayout from "../components/layout/AdminLayout";
-import api from "../services/api";
+import api, { API_BASE_URL } from "../services/api";
 import { COMPLAINT_STATUS_LIST } from "../shared/constants/complaintStatus";
 
 const STATUS_COLORS = {
@@ -161,7 +161,7 @@ function AdminComplaintDetailPage() {
     );
   }
 
-  const photoUrl = complaint.photoUrl ? `http://localhost:5000${complaint.photoUrl}` : null;
+  const photoUrl = complaint.photoUrl ? `${API_BASE_URL}${complaint.photoUrl}` : null;
 
   return (
     <AdminLayout breadcrumb="Complaint Detail">

@@ -3,24 +3,37 @@ import { Link } from "react-router-dom";
 import { Inbox, ChevronRight } from "lucide-react";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import api from "../services/api";
+import { connectSocket } from "../services/socket";
 import { STATUS_COLORS } from "../constants/complaint.constants";
 
 function MyComplaintsPage() {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchComplaints = async () => {
+    try {
+      const res = await api.get("/api/complaints/my");
+      setComplaints(res.data.complaints);
+    } catch (error) {
+      console.error("Failed to load complaints", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchComplaints = async () => {
-      try {
-        const res = await api.get("/api/complaints/my");
-        setComplaints(res.data.complaints);
-      } catch (error) {
-        console.error("Failed to load complaints", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchComplaints();
+  }, []);
+
+  // Live updates: if the admin changes any of this citizen's complaints
+  // while this list is open, silently refresh it in the background.
+  useEffect(() => {
+    const socket = connectSocket();
+    if (!socket) return;
+
+    const handleUpdate = () => fetchComplaints();
+    socket.on("complaint:updated", handleUpdate);
+    return () => socket.off("complaint:updated", handleUpdate);
   }, []);
 
   return (

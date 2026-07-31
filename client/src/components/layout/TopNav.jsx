@@ -3,12 +3,14 @@ import { Menu, Search, Bell, ChevronDown, FileText } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../services/api";
+import { connectSocket } from "../../services/socket";
 
 function TopNav({ onMenuClick }) {
   const { citizen, logout } = useAuth();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [bellPulse, setBellPulse] = useState(false);
 
   // --- Search ---
   const [query, setQuery] = useState("");
@@ -17,16 +19,33 @@ function TopNav({ onMenuClick }) {
   const [searching, setSearching] = useState(false);
   const searchBoxRef = useRef(null);
 
+  const fetchUnreadCount = async () => {
+    try {
+      const res = await api.get("/api/notifications");
+      setUnreadCount(res.data.unreadCount || 0);
+    } catch (error) {
+      console.error("Failed to load notifications count", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchUnreadCount = async () => {
-      try {
-        const res = await api.get("/api/notifications");
-        setUnreadCount(res.data.unreadCount || 0);
-      } catch (error) {
-        console.error("Failed to load notifications count", error);
-      }
-    };
     fetchUnreadCount();
+  }, []);
+
+  // Live updates: the moment the admin does something that generates a
+  // notification for this citizen, bump the badge without a page refresh.
+  useEffect(() => {
+    const socket = connectSocket();
+    if (!socket) return;
+
+    const handleNewNotification = () => {
+      fetchUnreadCount();
+      setBellPulse(true);
+      setTimeout(() => setBellPulse(false), 2000);
+    };
+
+    socket.on("notification:new", handleNewNotification);
+    return () => socket.off("notification:new", handleNewNotification);
   }, []);
 
   useEffect(() => {
@@ -132,7 +151,7 @@ function TopNav({ onMenuClick }) {
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate("/dashboard/notifications")}
-          className="relative p-2 rounded-full hover:bg-ink/5"
+          className={`relative p-2 rounded-full hover:bg-ink/5 transition-transform ${bellPulse ? "scale-110" : ""}`}
         >
           <Bell size={20} className="text-ink" />
           {unreadCount > 0 && (

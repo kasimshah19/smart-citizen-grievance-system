@@ -1,6 +1,7 @@
 const SupportTicket = require("./supportTicket.model");
 const Citizen = require("../auth/citizen.model");
 const Notification = require("../notification/notification.model");
+const { notifyCitizen } = require("../../socket");
 
 // List support tickets for the Admin Support Tickets page — filter + search + pagination
 const getAllTickets = async (req, res) => {
@@ -87,6 +88,8 @@ const replyToTicket = async (req, res) => {
       }`,
       type: "general",
     });
+
+    notifyCitizen(ticket.citizen, "notification:new");
 
     const updated = await SupportTicket.findById(ticket._id).populate("citizen", "fullName email phone");
 

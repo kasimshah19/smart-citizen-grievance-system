@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import api from "../services/api";
+import { connectSocket, disconnectSocket } from "../services/socket";
 
 const AuthContext = createContext();
 
@@ -21,6 +22,7 @@ export function AuthProvider({ children }) {
         const res = await api.get("/api/auth/me");
         setCitizen(res.data.citizen);
         localStorage.setItem("citizen", JSON.stringify(res.data.citizen));
+        connectSocket();
       } catch (error) {
         // Token invalid or expired — clear stale session
         localStorage.removeItem("token");
@@ -45,12 +47,14 @@ export function AuthProvider({ children }) {
       localStorage.setItem("citizen", JSON.stringify(citizenData));
       setCitizen(citizenData);
     }
+    connectSocket();
   };
 
   const logout = () => {
     localStorage.removeItem("citizen");
     localStorage.removeItem("token");
     setCitizen(null);
+    disconnectSocket();
   };
 
   const updateCitizen = (updatedData) => {

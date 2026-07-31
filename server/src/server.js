@@ -1,7 +1,9 @@
 const express = require("express");
+const http = require("http");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
+const socket = require("./socket");
 const authRoutes = require("./modules/auth/auth.routes");
 const dashboardRoutes = require("./modules/dashboard/dashboard.routes");
 const complaintRoutes = require("./modules/complaint/complaint.routes");
@@ -47,6 +49,9 @@ app.use("/api/employee", employeeSelfRoutes);
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+const server = http.createServer(app);
+socket.init(server);
+
+server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

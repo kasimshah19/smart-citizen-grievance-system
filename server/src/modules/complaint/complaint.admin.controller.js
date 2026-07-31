@@ -1,6 +1,8 @@
 const Complaint = require("./complaint.model");
 const ComplaintHistory = require("./complaintHistory.model");
+const Notification = require("../notification/notification.model");
 const { COMPLAINT_STATUS_LIST } = require("../../shared/constants/complaintStatus");
+const { notifyCitizen } = require("../../socket");
 
 // List all complaints across every citizen, with optional filters
 const getAllComplaints = async (req, res) => {
@@ -86,6 +88,22 @@ const assignComplaint = async (req, res) => {
       remarks: `Assigned to ${department.trim()}${employeeId ? " department team" : ""}`,
     });
 
+    await Notification.create({
+      citizen: complaint.citizen,
+      title: "Complaint Assigned",
+      message: `Your complaint ${complaint.complaintNumber} has been assigned to the ${department.trim()} department.`,
+      type: "status_update",
+      relatedComplaint: complaint._id,
+    });
+
+    notifyCitizen(complaint.citizen, "complaint:updated", {
+      complaintId: complaint._id.toString(),
+      complaintNumber: complaint.complaintNumber,
+      status: complaint.status,
+      department: complaint.department,
+    });
+    notifyCitizen(complaint.citizen, "notification:new");
+
     return res.status(200).json({ success: true, message: "Complaint assigned successfully", complaint });
   } catch (error) {
     console.error(error);
@@ -119,6 +137,22 @@ const updateComplaintStatus = async (req, res) => {
       performerRole: "Admin",
       remarks: remarks || "",
     });
+
+    await Notification.create({
+      citizen: complaint.citizen,
+      title: "Complaint Status Updated",
+      message: `Your complaint ${complaint.complaintNumber} is now "${status}".`,
+      type: "status_update",
+      relatedComplaint: complaint._id,
+    });
+
+    notifyCitizen(complaint.citizen, "complaint:updated", {
+      complaintId: complaint._id.toString(),
+      complaintNumber: complaint.complaintNumber,
+      status: complaint.status,
+      department: complaint.department,
+    });
+    notifyCitizen(complaint.citizen, "notification:new");
 
     return res.status(200).json({ success: true, message: "Status updated successfully", complaint });
   } catch (error) {

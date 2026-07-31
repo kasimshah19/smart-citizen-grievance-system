@@ -17,6 +17,7 @@ import {
 import DashboardLayout from "../components/layout/DashboardLayout";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../services/api";
+import { connectSocket } from "../services/socket";
 
 const statusMeta = [
   { key: "submitted", label: "Submitted", color: "bg-slate" },
@@ -40,17 +41,18 @@ function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [announcements, setAnnouncements] = useState([]);
 
+  const fetchSummary = async () => {
+    try {
+      const res = await api.get("/api/dashboard/summary");
+      setSummary(res.data.summary);
+    } catch (error) {
+      console.error("Failed to load dashboard summary", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchSummary = async () => {
-      try {
-        const res = await api.get("/api/dashboard/summary");
-        setSummary(res.data.summary);
-      } catch (error) {
-        console.error("Failed to load dashboard summary", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchSummary();
 
     const fetchAnnouncements = async () => {
@@ -62,6 +64,17 @@ function DashboardPage() {
       }
     };
     fetchAnnouncements();
+  }, []);
+
+  // Live updates: refresh stats/recent complaints the moment the admin
+  // changes something, instead of waiting for a manual page reload.
+  useEffect(() => {
+    const socket = connectSocket();
+    if (!socket) return;
+
+    const handleUpdate = () => fetchSummary();
+    socket.on("complaint:updated", handleUpdate);
+    return () => socket.off("complaint:updated", handleUpdate);
   }, []);
 
   const today = new Date().toLocaleDateString("en-IN", {
