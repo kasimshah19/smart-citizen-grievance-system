@@ -1,9 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Upload, CheckCircle2 } from "lucide-react";
+import { MapPin, Upload, CheckCircle2, Sparkles } from "lucide-react";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import api from "../services/api";
 import { COMPLAINT_CATEGORIES, PRIORITY_LEVELS } from "../constants/complaint.constants";
+import { suggestCategory } from "../utils/categorySuggestion";
 
 function NewComplaintPage() {
   const navigate = useNavigate();
@@ -24,9 +25,35 @@ function NewComplaintPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
 
+  // Whether the current category value came from auto-suggestion (vs. the user picking it themselves)
+  const [categoryAutoSuggested, setCategoryAutoSuggested] = useState(false);
+  const [categoryManuallyChosen, setCategoryManuallyChosen] = useState(false);
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === "category") {
+      // The user is choosing a category themselves — stop auto-suggesting from now on
+      setCategoryManuallyChosen(true);
+      setCategoryAutoSuggested(false);
+    }
+
+    setFormData({ ...formData, [name]: value });
   };
+
+  // Auto-suggest a category from the title + description, unless the user already picked one manually
+  useEffect(() => {
+    if (categoryManuallyChosen) return;
+
+    const combinedText = `${formData.title} ${formData.description}`;
+    const suggestion = suggestCategory(combinedText);
+
+    if (suggestion && suggestion !== formData.category) {
+      setFormData((prev) => ({ ...prev, category: suggestion }));
+      setCategoryAutoSuggested(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.title, formData.description, categoryManuallyChosen]);
 
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
@@ -185,8 +212,13 @@ function NewComplaintPage() {
 
         <form onSubmit={handleSubmit} className="bg-white border border-line rounded-2xl p-6 space-y-5">
           <div>
-            <label className="block text-sm text-ink mb-1.5">
+            <label className="block text-sm text-ink mb-1.5 flex items-center gap-2">
               Category <span className="text-error">*</span>
+              {categoryAutoSuggested && formData.category && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-normal text-signal bg-signal/10 px-2 py-0.5 rounded-full">
+                  <Sparkles size={11} /> Suggested for you
+                </span>
+              )}
             </label>
             <select
               name="category"
@@ -200,6 +232,11 @@ function NewComplaintPage() {
                 <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>
+            {categoryAutoSuggested && (
+              <p className="text-xs text-slate mt-1">
+                We picked this based on your description — change it if it's not quite right.
+              </p>
+            )}
             {errors.category && <p className="text-error text-xs mt-1">{errors.category}</p>}
           </div>
 
