@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, MapPin, Calendar, Tag, AlertCircle, Clock, Radio } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar, Tag, AlertCircle, Clock, Radio, Users } from "lucide-react";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import api, { API_BASE_URL } from "../services/api";
 import { connectSocket } from "../services/socket";
@@ -108,6 +108,11 @@ function ComplaintDetailPage() {
               {justUpdated && (
                 <span className="text-xs px-2.5 py-0.5 rounded-full bg-success/10 text-success flex items-center gap-1">
                   <Radio size={11} /> Updated just now
+                </span>
+              )}
+              {complaint.reportCount > 1 && (
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-signal/10 text-signal flex items-center gap-1">
+                  <Users size={11} /> Reported by {complaint.reportCount} citizens
                 </span>
               )}
             </div>

@@ -5,6 +5,7 @@ const SupportTicket = require("../support/supportTicket.model");
 const Department = require("../department/department.model");
 const { COMPLAINT_STATUS } = require("../../shared/constants/complaintStatus");
 const ROLES = require("../../shared/constants/roles");
+const { isComplaintOverdue } = require("../../shared/utils/sla");
 
 // KPI cards for the Admin Dashboard
 const getDashboardSummary = async (req, res) => {
@@ -18,6 +19,8 @@ const getDashboardSummary = async (req, res) => {
 
     const countByStatus = (status) => complaints.filter((c) => c.status === status).length;
 
+    const overdueCount = complaints.filter((c) => isComplaintOverdue(c)).length;
+
     const kpis = {
       total: complaints.length,
       today: todayCount,
@@ -28,6 +31,7 @@ const getDashboardSummary = async (req, res) => {
       resolved: countByStatus(COMPLAINT_STATUS.RESOLVED),
       closed: countByStatus(COMPLAINT_STATUS.CLOSED),
       reopened: countByStatus(COMPLAINT_STATUS.REOPENED),
+      overdue: overdueCount,
     };
 
     // Chart-ready aggregates — placeholders that real chart components can consume later

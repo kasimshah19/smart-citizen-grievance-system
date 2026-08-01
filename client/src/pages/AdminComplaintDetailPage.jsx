@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, MapPin, Calendar, Tag, AlertCircle, Clock, UserCog } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar, Tag, AlertCircle, Clock, UserCog, Users } from "lucide-react";
 import AdminLayout from "../components/layout/AdminLayout";
 import api, { API_BASE_URL } from "../services/api";
 import { COMPLAINT_STATUS_LIST } from "../shared/constants/complaintStatus";
@@ -198,6 +198,11 @@ function AdminComplaintDetailPage() {
                 <span className={`text-xs px-2.5 py-0.5 rounded-full ${STATUS_COLORS[complaint.status]}`}>
                   {complaint.status}
                 </span>
+                {complaint.reportCount > 1 && (
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-signal/10 text-signal flex items-center gap-1">
+                    <Users size={11} /> Reported by {complaint.reportCount} citizens
+                  </span>
+                )}
               </div>
 
               <h1 className="font-display text-2xl text-ink mb-2">{complaint.title}</h1>

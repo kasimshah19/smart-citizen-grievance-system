@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Eye, Search } from "lucide-react";
+import { Eye, Search, Users } from "lucide-react";
 import AdminLayout from "../components/layout/AdminLayout";
 import api from "../services/api";
 import { COMPLAINT_STATUS_LIST } from "../shared/constants/complaintStatus";
@@ -127,7 +127,19 @@ function AdminComplaintsPage() {
               <tbody>
                 {complaints.map((c) => (
                   <tr key={c._id} className="border-b border-line last:border-0 hover:bg-ink/5">
-                    <td className="px-4 py-3 font-mono text-xs text-slate">{c.complaintNumber}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-slate">
+                      <div className="flex items-center gap-1.5">
+                        {c.complaintNumber}
+                        {c.reportCount > 1 && (
+                          <span
+                            title={`Reported by ${c.reportCount} citizens`}
+                            className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-signal/10 text-signal font-sans"
+                          >
+                            <Users size={10} /> {c.reportCount}
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-ink">{c.citizen?.fullName || "Unknown"}</td>
                     <td className="px-4 py-3 text-slate hidden sm:table-cell">{c.category}</td>
                     <td className="px-4 py-3 text-slate hidden md:table-cell">{c.priority}</td>

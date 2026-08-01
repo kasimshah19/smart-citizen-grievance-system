@@ -3,11 +3,12 @@ const ComplaintHistory = require("./complaintHistory.model");
 const Notification = require("../notification/notification.model");
 const { COMPLAINT_STATUS_LIST } = require("../../shared/constants/complaintStatus");
 const { notifyCitizen } = require("../../socket");
+const { isComplaintOverdue } = require("../../shared/utils/sla");
 
 // List all complaints across every citizen, with optional filters
 const getAllComplaints = async (req, res) => {
   try {
-    const { status, department, priority, search } = req.query;
+    const { status, department, priority, search, overdueOnly } = req.query;
 
     const filter = {};
     if (status) filter.status = status;
@@ -29,7 +30,16 @@ const getAllComplaints = async (req, res) => {
       );
     }
 
-    return res.status(200).json({ success: true, complaints });
+    let withOverdueFlag = complaints.map((c) => ({
+      ...c.toObject(),
+      isOverdue: isComplaintOverdue(c),
+    }));
+
+    if (overdueOnly === "true") {
+      withOverdueFlag = withOverdueFlag.filter((c) => c.isOverdue);
+    }
+
+    return res.status(200).json({ success: true, complaints: withOverdueFlag });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ success: false, message: "Something went wrong" });

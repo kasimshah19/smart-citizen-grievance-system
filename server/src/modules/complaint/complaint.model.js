@@ -68,6 +68,18 @@ const complaintSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    // When multiple citizens report the same real-world issue (same category,
+    // same spot), we group them here instead of creating separate complaints.
+    reportCount: {
+      type: Number,
+      default: 1,
+    },
+    duplicateReporters: [
+      {
+        citizen: { type: mongoose.Schema.Types.ObjectId, ref: "Citizen" },
+        reportedAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   {
     timestamps: true,

@@ -6,6 +6,8 @@ const {
   createComplaint,
   getMyComplaints,
   searchMyComplaints,
+  checkDuplicate,
+  joinComplaint,
   getComplaintById,
   getComplaintHistory,
 } = require("./complaint.controller");
@@ -13,6 +15,8 @@ const {
 router.post("/", protect, upload.single("photo"), createComplaint);
 router.get("/my", protect, getMyComplaints);
 router.get("/search", protect, searchMyComplaints);
+router.get("/check-duplicate", protect, checkDuplicate);
+router.post("/:id/join", protect, joinComplaint);
 router.get("/:id", protect, getComplaintById);
 router.get("/:id/history", protect, getComplaintHistory);
 

@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Upload, CheckCircle2, Sparkles } from "lucide-react";
+import { MapPin, Upload, CheckCircle2, Sparkles, X, Users } from "lucide-react";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import api from "../services/api";
 import { COMPLAINT_CATEGORIES, PRIORITY_LEVELS } from "../constants/complaint.constants";
@@ -24,36 +24,93 @@ function NewComplaintPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
+  const [suggestion, setSuggestion] = useState(null);
+  const [dismissedSuggestion, setDismissedSuggestion] = useState(null);
+  const [duplicateMatch, setDuplicateMatch] = useState(null);
+  const [checkingDuplicate, setCheckingDuplicate] = useState(false);
+  const [duplicateDismissed, setDuplicateDismissed] = useState(false);
+  const [joining, setJoining] = useState(false);
+  const [joinedComplaint, setJoinedComplaint] = useState(null);
 
-  // Whether the current category value came from auto-suggestion (vs. the user picking it themselves)
-  const [categoryAutoSuggested, setCategoryAutoSuggested] = useState(false);
-  const [categoryManuallyChosen, setCategoryManuallyChosen] = useState(false);
+  // As the citizen types the title/description, suggest a category based on
+  // keyword matching — but never override a category they've already chosen.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const combinedText = `${formData.title} ${formData.description}`;
+      const result = suggestCategory(combinedText);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+      if (
+        result &&
+        result.category !== formData.category &&
+        result.category !== dismissedSuggestion
+      ) {
+        setSuggestion(result.category);
+      } else {
+        setSuggestion(null);
+      }
+    }, 500);
 
-    if (name === "category") {
-      // The user is choosing a category themselves — stop auto-suggesting from now on
-      setCategoryManuallyChosen(true);
-      setCategoryAutoSuggested(false);
-    }
+    return () => clearTimeout(timer);
+  }, [formData.title, formData.description, formData.category, dismissedSuggestion]);
 
-    setFormData({ ...formData, [name]: value });
+  const applySuggestion = () => {
+    setFormData((prev) => ({ ...prev, category: suggestion }));
+    setSuggestion(null);
   };
 
-  // Auto-suggest a category from the title + description, unless the user already picked one manually
+  const dismissSuggestion = () => {
+    setDismissedSuggestion(suggestion);
+    setSuggestion(null);
+  };
+
+  // Once both a category and GPS coordinates are available, check whether a
+  // similar open complaint already exists nearby — so the citizen can add
+  // their voice to it instead of filing a separate one.
   useEffect(() => {
-    if (categoryManuallyChosen) return;
-
-    const combinedText = `${formData.title} ${formData.description}`;
-    const suggestion = suggestCategory(combinedText);
-
-    if (suggestion && suggestion !== formData.category) {
-      setFormData((prev) => ({ ...prev, category: suggestion }));
-      setCategoryAutoSuggested(true);
+    if (!formData.category || !coords.latitude || !coords.longitude) {
+      setDuplicateMatch(null);
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.title, formData.description, categoryManuallyChosen]);
+
+    const timer = setTimeout(async () => {
+      setCheckingDuplicate(true);
+      try {
+        const res = await api.get("/api/complaints/check-duplicate", {
+          params: {
+            category: formData.category,
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+          },
+        });
+        setDuplicateMatch(res.data.duplicate);
+        setDuplicateDismissed(false);
+      } catch (err) {
+        console.error("Duplicate check failed", err);
+      } finally {
+        setCheckingDuplicate(false);
+      }
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [formData.category, coords.latitude, coords.longitude]);
+
+  const handleJoinComplaint = async () => {
+    if (!duplicateMatch) return;
+    setJoining(true);
+    setMessage("");
+    try {
+      const res = await api.post(`/api/complaints/${duplicateMatch.complaintId}/join`);
+      setJoinedComplaint(res.data.complaint);
+    } catch (err) {
+      setMessage(err.response?.data?.message || "Failed to join this report");
+    } finally {
+      setJoining(false);
+    }
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
@@ -167,6 +224,40 @@ function NewComplaintPage() {
   const inputClass =
     "w-full px-4 py-3 bg-paper border border-line rounded-lg text-ink placeholder:text-slate/60 focus:outline-none focus:border-ink transition-colors text-sm";
 
+  if (joinedComplaint) {
+    return (
+      <DashboardLayout>
+        <div className="max-w-lg mx-auto bg-white border border-line rounded-2xl p-10 text-center">
+          <Users size={40} className="text-success mx-auto mb-4" />
+          <h1 className="font-display text-2xl text-ink mb-2">Voice Added</h1>
+          <p className="text-slate text-sm mb-1">
+            You've been added as a reporter on this existing complaint — no need to file a separate one.
+          </p>
+          <p className="font-mono text-sm bg-ink/5 inline-block px-3 py-1 rounded-full mt-3 mb-2">
+            {joinedComplaint.complaintNumber}
+          </p>
+          <p className="text-xs text-slate mb-6">
+            Now reported by {joinedComplaint.reportCount} citizen{joinedComplaint.reportCount === 1 ? "" : "s"}
+          </p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => navigate(`/dashboard/complaints/${joinedComplaint._id}`)}
+              className="px-5 py-2.5 bg-ink text-paper rounded-full text-sm font-medium hover:bg-signal transition-colors"
+            >
+              View Complaint
+            </button>
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="px-5 py-2.5 border border-line rounded-full text-sm text-ink hover:border-ink transition-colors"
+            >
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   if (success) {
     return (
       <DashboardLayout>
@@ -212,13 +303,8 @@ function NewComplaintPage() {
 
         <form onSubmit={handleSubmit} className="bg-white border border-line rounded-2xl p-6 space-y-5">
           <div>
-            <label className="block text-sm text-ink mb-1.5 flex items-center gap-2">
+            <label className="block text-sm text-ink mb-1.5">
               Category <span className="text-error">*</span>
-              {categoryAutoSuggested && formData.category && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-normal text-signal bg-signal/10 px-2 py-0.5 rounded-full">
-                  <Sparkles size={11} /> Suggested for you
-                </span>
-              )}
             </label>
             <select
               name="category"
@@ -232,11 +318,6 @@ function NewComplaintPage() {
                 <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>
-            {categoryAutoSuggested && (
-              <p className="text-xs text-slate mt-1">
-                We picked this based on your description — change it if it's not quite right.
-              </p>
-            )}
             {errors.category && <p className="text-error text-xs mt-1">{errors.category}</p>}
           </div>
 
@@ -269,6 +350,33 @@ function NewComplaintPage() {
               required
             />
             {errors.description && <p className="text-error text-xs mt-1">{errors.description}</p>}
+
+            {suggestion && (
+              <div className="mt-3 flex items-center justify-between gap-3 bg-signal/5 border border-signal/30 rounded-lg px-4 py-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Sparkles size={16} className="text-signal shrink-0" />
+                  <p className="text-sm text-ink">
+                    This looks like a <span className="font-medium">{suggestion}</span> complaint
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={applySuggestion}
+                    className="text-xs px-3 py-1.5 bg-ink text-paper rounded-full font-medium hover:bg-signal transition-colors"
+                  >
+                    Use this
+                  </button>
+                  <button
+                    type="button"
+                    onClick={dismissSuggestion}
+                    className="p-1 text-slate hover:text-ink transition-colors"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div>
@@ -303,6 +411,46 @@ function NewComplaintPage() {
               </p>
             )}
             {errors.address && <p className="text-error text-xs mt-1">{errors.address}</p>}
+
+            {checkingDuplicate && (
+              <p className="text-xs text-slate mt-2">Checking for similar reports nearby…</p>
+            )}
+
+            {duplicateMatch && !duplicateDismissed && (
+              <div className="mt-3 bg-signal/5 border border-signal/30 rounded-lg px-4 py-3">
+                <div className="flex items-start gap-2">
+                  <Users size={16} className="text-signal shrink-0 mt-0.5" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-ink">
+                      <span className="font-medium">{duplicateMatch.reportCount}</span> citizen
+                      {duplicateMatch.reportCount === 1 ? " has" : "s have"} already reported "
+                      <span className="font-medium">{duplicateMatch.title}</span>" about{" "}
+                      {duplicateMatch.distanceMeters}m from here.
+                    </p>
+                    <p className="text-xs text-slate mt-1">
+                      If this is the same issue, add your voice to it instead of filing a new one — it helps us prioritize.
+                    </p>
+                    <div className="flex items-center gap-2 mt-3">
+                      <button
+                        type="button"
+                        onClick={handleJoinComplaint}
+                        disabled={joining}
+                        className="text-xs px-3 py-1.5 bg-ink text-paper rounded-full font-medium hover:bg-signal transition-colors disabled:opacity-50"
+                      >
+                        {joining ? "Adding…" : "Yes, add my voice to it"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDuplicateDismissed(true)}
+                        className="text-xs px-3 py-1.5 text-slate hover:text-ink transition-colors"
+                      >
+                        No, this is different
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div>
