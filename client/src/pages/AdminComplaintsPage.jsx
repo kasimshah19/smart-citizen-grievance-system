@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Eye, Search, Users, AlertTriangle } from "lucide-react";
+import { Eye, Search, Users, FileSpreadsheet, FileDown } from "lucide-react";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import AdminLayout from "../components/layout/AdminLayout";
 import api from "../services/api";
 import { COMPLAINT_STATUS_LIST } from "../shared/constants/complaintStatus";
@@ -26,7 +29,6 @@ function AdminComplaintsPage() {
     status: searchParams.get("status") || "",
     priority: "",
     search: "",
-    overdueOnly: false,
   });
 
   const fetchComplaints = async () => {
@@ -36,7 +38,6 @@ function AdminComplaintsPage() {
       if (filters.status) params.status = filters.status;
       if (filters.priority) params.priority = filters.priority;
       if (filters.search) params.search = filters.search;
-      if (filters.overdueOnly) params.overdueOnly = "true";
 
       const res = await api.get("/api/admin/complaints", { params });
       setComplaints(res.data.complaints);
@@ -50,14 +51,80 @@ function AdminComplaintsPage() {
   useEffect(() => {
     fetchComplaints();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.status, filters.priority, filters.overdueOnly]);
+  }, [filters.status, filters.priority]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     fetchComplaints();
   };
 
-  const overdueCount = complaints.filter((c) => c.isOverdue).length;
+  const buildExportRows = () =>
+    complaints.map((c) => ({
+      "Complaint No": c.complaintNumber,
+      Citizen: c.citizen?.fullName || "Unknown",
+      Category: c.category,
+      Priority: c.priority,
+      Status: c.status,
+      Department: c.department || "Unassigned",
+      Employee: c.assignedEmployee?.fullName || "Unassigned",
+      Reports: c.reportCount || 1,
+      Date: new Date(c.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
+    }));
+
+  const handleExportExcel = () => {
+    const rows = buildExportRows();
+    if (rows.length === 0) return;
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    // Roughly auto-size each column based on its longest value
+    worksheet["!cols"] = Object.keys(rows[0]).map((key) => ({
+      wch: Math.max(key.length, ...rows.map((row) => String(row[key] ?? "").length)) + 2,
+    }));
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Complaints");
+
+    const dateStr = new Date().toISOString().split("T")[0];
+    XLSX.writeFile(workbook, `complaints-report-${dateStr}.xlsx`);
+  };
+
+  const handleExportPDF = () => {
+    if (complaints.length === 0) return;
+
+    const doc = new jsPDF({ orientation: "landscape" });
+
+    doc.setFontSize(15);
+    doc.text("Smart Citizen Grievance Management System", 14, 15);
+    doc.setFontSize(11);
+    doc.setTextColor(90);
+    doc.text("Complaints Report", 14, 22);
+    doc.setFontSize(9);
+    doc.text(
+      `Generated on ${new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })} — ${complaints.length} complaint(s)`,
+      14,
+      28
+    );
+
+    autoTable(doc, {
+      startY: 34,
+      head: [["Complaint No", "Citizen", "Category", "Priority", "Status", "Department", "Employee", "Date"]],
+      body: complaints.map((c) => [
+        c.complaintNumber,
+        c.citizen?.fullName || "Unknown",
+        c.category,
+        c.priority,
+        c.status,
+        c.department || "—",
+        c.assignedEmployee?.fullName || "—",
+        new Date(c.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
+      ]),
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [20, 35, 48] },
+    });
+
+    const dateStr = new Date().toISOString().split("T")[0];
+    doc.save(`complaints-report-${dateStr}.pdf`);
+  };
 
   const inputClass =
     "px-3 py-2 bg-white border border-line rounded-lg text-ink text-sm focus:outline-none focus:border-ink";
@@ -66,18 +133,27 @@ function AdminComplaintsPage() {
     <AdminLayout breadcrumb="Complaints">
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-2xl text-ink">Complaints</h1>
-        <div className="flex items-center gap-3 text-sm text-slate">
-          {overdueCount > 0 && (
-            <span className="flex items-center gap-1 text-error font-medium">
-              <AlertTriangle size={14} /> {overdueCount} overdue
-            </span>
-          )}
-          <p>{complaints.length} total</p>
+        <div className="flex items-center gap-3">
+          <p className="text-sm text-slate">{complaints.length} total</p>
+          <button
+            onClick={handleExportExcel}
+            disabled={complaints.length === 0}
+            className="flex items-center gap-1.5 text-xs px-3 py-2 border border-line rounded-lg text-ink hover:border-ink transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <FileSpreadsheet size={14} /> Export Excel
+          </button>
+          <button
+            onClick={handleExportPDF}
+            disabled={complaints.length === 0}
+            className="flex items-center gap-1.5 text-xs px-3 py-2 border border-line rounded-lg text-ink hover:border-ink transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <FileDown size={14} /> Export PDF
+          </button>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 mb-5">
+      <div className="flex flex-wrap gap-3 mb-5">
         <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 flex-1 min-w-[220px]">
           <div className="flex items-center gap-2 bg-white border border-line rounded-lg px-3 py-2 flex-1">
             <Search size={15} className="text-slate" />
@@ -112,15 +188,6 @@ function AdminComplaintsPage() {
             <option key={p} value={p}>{p}</option>
           ))}
         </select>
-
-        <label className="flex items-center gap-2 bg-white border border-line rounded-lg px-3 py-2 text-sm text-ink cursor-pointer">
-          <input
-            type="checkbox"
-            checked={filters.overdueOnly}
-            onChange={(e) => setFilters({ ...filters, overdueOnly: e.target.checked })}
-          />
-          Overdue only (7+ days, no action)
-        </label>
       </div>
 
       <div className="bg-white border border-line rounded-2xl overflow-hidden">
@@ -146,14 +213,9 @@ function AdminComplaintsPage() {
               </thead>
               <tbody>
                 {complaints.map((c) => (
-                  <tr
-                    key={c._id}
-                    className={`border-b border-line last:border-0 hover:bg-ink/5 ${
-                      c.isOverdue ? "bg-error/5" : ""
-                    }`}
-                  >
+                  <tr key={c._id} className="border-b border-line last:border-0 hover:bg-ink/5">
                     <td className="px-4 py-3 font-mono text-xs text-slate">
-                      <div className="flex items-center gap-1.5 flex-wrap">
+                      <div className="flex items-center gap-1.5">
                         {c.complaintNumber}
                         {c.reportCount > 1 && (
                           <span
@@ -161,14 +223,6 @@ function AdminComplaintsPage() {
                             className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-signal/10 text-signal font-sans"
                           >
                             <Users size={10} /> {c.reportCount}
-                          </span>
-                        )}
-                        {c.isOverdue && (
-                          <span
-                            title="Overdue — no action in 7+ days"
-                            className="flex items-center gap-0.5 text-[10px] font-sans font-medium text-error bg-error/10 px-1.5 py-0.5 rounded-full"
-                          >
-                            <AlertTriangle size={9} /> Overdue
                           </span>
                         )}
                       </div>
