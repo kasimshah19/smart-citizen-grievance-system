@@ -80,6 +80,22 @@ const complaintSchema = new mongoose.Schema(
         reportedAt: { type: Date, default: Date.now },
       },
     ],
+    // Citizen's feedback after their complaint is resolved — one-time, optional
+    rating: {
+      type: Number,
+      min: 1,
+      max: 5,
+      default: null,
+    },
+    ratingFeedback: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    ratedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

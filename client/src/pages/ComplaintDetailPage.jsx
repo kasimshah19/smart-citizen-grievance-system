@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, MapPin, Calendar, Tag, AlertCircle, Clock, Radio, Users } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar, Tag, AlertCircle, Clock, Radio, Users, Star } from "lucide-react";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import api, { API_BASE_URL } from "../services/api";
 import { connectSocket } from "../services/socket";
@@ -94,7 +94,8 @@ function ComplaintDetailPage() {
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Left: Complaint details */}
-        <div className="lg:col-span-2 bg-white border border-line rounded-2xl overflow-hidden h-fit">
+        <div className="lg:col-span-2 space-y-6">
+        <div className="bg-white border border-line rounded-2xl overflow-hidden h-fit">
           {photoUrl && (
             <img src={photoUrl} alt={complaint.title} className="w-full max-h-80 object-cover" />
           )}
@@ -172,6 +173,9 @@ function ComplaintDetailPage() {
           </div>
         </div>
 
+        <RatingCard complaint={complaint} onRated={fetchData} />
+        </div>
+
         {/* Right: Timeline */}
         <div className="bg-white border border-line rounded-2xl p-6 h-fit">
           <h2 className="font-display text-lg text-ink mb-5">Complaint Timeline</h2>
@@ -216,3 +220,110 @@ function ComplaintDetailPage() {
 }
 
 export default ComplaintDetailPage;
+
+// A small, self-contained card for rating a resolved complaint. Kept as its
+// own component (own state, own submit handler) so it doesn't touch or
+// depend on anything inside ComplaintDetailPage itself.
+function RatingCard({ complaint, onRated }) {
+  const [hoverValue, setHoverValue] = useState(0);
+  const [selectedValue, setSelectedValue] = useState(0);
+  const [feedback, setFeedback] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  const isRateable = ["Resolved", "Closed"].includes(complaint.status);
+  if (!isRateable) return null;
+
+  // Already rated — show it as a simple read-only summary
+  if (complaint.rating) {
+    return (
+      <div className="bg-white border border-line rounded-2xl p-6">
+        <h2 className="font-display text-lg text-ink mb-3">Your Feedback</h2>
+        <div className="flex items-center gap-1 mb-2">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <Star
+              key={n}
+              size={20}
+              className={n <= complaint.rating ? "fill-signal text-signal" : "text-line"}
+            />
+          ))}
+        </div>
+        {complaint.ratingFeedback && (
+          <p className="text-sm text-slate">{complaint.ratingFeedback}</p>
+        )}
+      </div>
+    );
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (selectedValue === 0) {
+      setError("Please select a star rating");
+      return;
+    }
+    setSubmitting(true);
+    setError("");
+    try {
+      await api.post(`/api/complaints/${complaint._id}/rate`, {
+        rating: selectedValue,
+        feedback,
+      });
+      onRated();
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to submit rating");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="bg-white border border-line rounded-2xl p-6">
+      <h2 className="font-display text-lg text-ink mb-1">How did we do?</h2>
+      <p className="text-sm text-slate mb-4">Your complaint has been resolved — let us know how it went.</p>
+
+      {error && (
+        <div className="mb-4 text-sm bg-error/5 border border-error/30 rounded-lg px-4 py-3 text-error">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit}>
+        <div className="flex items-center gap-1 mb-4">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => setSelectedValue(n)}
+              onMouseEnter={() => setHoverValue(n)}
+              onMouseLeave={() => setHoverValue(0)}
+              className="p-0.5"
+            >
+              <Star
+                size={28}
+                className={
+                  n <= (hoverValue || selectedValue) ? "fill-signal text-signal" : "text-line"
+                }
+              />
+            </button>
+          ))}
+        </div>
+
+        <textarea
+          rows={2}
+          value={feedback}
+          onChange={(e) => setFeedback(e.target.value)}
+          placeholder="Optional comment about how it was handled…"
+          className="w-full px-4 py-3 bg-paper border border-line rounded-lg text-ink placeholder:text-slate/60 focus:outline-none focus:border-ink transition-colors text-sm resize-none mb-4"
+        />
+
+        <button
+          type="submit"
+          disabled={submitting}
+          className="px-5 py-2.5 bg-ink text-paper rounded-lg text-sm font-medium hover:bg-signal transition-colors disabled:opacity-50"
+        >
+          {submitting ? "Submitting…" : "Submit Feedback"}
+        </button>
+      </form>
+    </div>
+  );
+}

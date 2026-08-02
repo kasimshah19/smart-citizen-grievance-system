@@ -150,15 +150,36 @@ const joinComplaint = async (req, res) => {
 
     complaint.duplicateReporters.push({ citizen: req.citizen._id });
     complaint.reportCount = (complaint.reportCount || 1) + 1;
+
+    // Auto-escalate priority as more citizens report the same issue —
+    // never downgrades, only raises it if the new level is higher.
+    const PRIORITY_ORDER = ["Low", "Medium", "High", "Emergency"];
+    const ESCALATION_THRESHOLDS = [
+      { minReports: 8, level: "Emergency" },
+      { minReports: 5, level: "High" },
+      { minReports: 3, level: "Medium" },
+    ];
+    const currentRank = PRIORITY_ORDER.indexOf(complaint.priority);
+    const earnedLevel = ESCALATION_THRESHOLDS.find((t) => complaint.reportCount >= t.minReports)?.level;
+    const priorityEscalated = earnedLevel && PRIORITY_ORDER.indexOf(earnedLevel) > currentRank;
+
+    if (priorityEscalated) {
+      complaint.priority = earnedLevel;
+    }
+
     await complaint.save();
 
     await ComplaintHistory.create({
       complaint: complaint._id,
       status: complaint.status,
-      action: "Additional citizen reported this issue",
+      action: priorityEscalated
+        ? `Additional citizen reported this issue — priority auto-raised to ${complaint.priority}`
+        : "Additional citizen reported this issue",
       performedBy: req.citizen._id,
       performerRole: "Citizen",
-      remarks: `Now reported by ${complaint.reportCount} citizens`,
+      remarks: priorityEscalated
+        ? `Now reported by ${complaint.reportCount} citizens — priority raised to ${complaint.priority} due to high impact`
+        : `Now reported by ${complaint.reportCount} citizens`,
     });
 
     return res.status(200).json({
@@ -246,6 +267,53 @@ const getComplaintHistory = async (req, res) => {
   }
 };
 
+// Citizen rates how their (already resolved) complaint was handled — one-time only
+const submitRating = async (req, res) => {
+  try {
+    const { rating, feedback } = req.body;
+
+    const numericRating = Number(rating);
+    if (!numericRating || numericRating < 1 || numericRating > 5) {
+      return res.status(400).json({ success: false, message: "Rating must be between 1 and 5" });
+    }
+
+    const complaint = await Complaint.findOne({ _id: req.params.id, citizen: req.citizen._id });
+    if (!complaint) {
+      return res.status(404).json({ success: false, message: "Complaint not found" });
+    }
+
+    if (!["Resolved", "Closed"].includes(complaint.status)) {
+      return res.status(400).json({
+        success: false,
+        message: "You can only rate a complaint after it has been resolved",
+      });
+    }
+
+    if (complaint.rating) {
+      return res.status(400).json({ success: false, message: "You've already rated this complaint" });
+    }
+
+    complaint.rating = numericRating;
+    complaint.ratingFeedback = feedback?.trim() || "";
+    complaint.ratedAt = new Date();
+    await complaint.save();
+
+    await ComplaintHistory.create({
+      complaint: complaint._id,
+      status: complaint.status,
+      action: `Citizen rated this complaint ${numericRating}/5`,
+      performedBy: req.citizen._id,
+      performerRole: "Citizen",
+      remarks: feedback?.trim() || "",
+    });
+
+    return res.status(200).json({ success: true, message: "Thank you for your feedback", complaint });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Something went wrong" });
+  }
+};
+
 module.exports = {
   createComplaint,
   getMyComplaints,
@@ -254,4 +322,5 @@ module.exports = {
   joinComplaint,
   getComplaintById,
   getComplaintHistory,
+  submitRating,
 };
