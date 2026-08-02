@@ -29,7 +29,7 @@ const CATEGORY_KEYWORDS = {
   ],
 };
 
-// Returns the best-matching category name, or null if nothing matches well
+// Returns { category, score } for the best-matching category, or null if nothing matches well
 export function suggestCategory(text) {
   if (!text || text.trim().length < 3) return null;
 
@@ -51,5 +51,7 @@ export function suggestCategory(text) {
     }
   }
 
-  return bestMatch;
+  if (!bestMatch) return null;
+
+  return { category: bestMatch, score: bestScore };
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Eye, Search, Users, FileSpreadsheet, FileDown } from "lucide-react";
+import { Eye, Search, Users, FileSpreadsheet, FileDown, AlertTriangle } from "lucide-react";
 import ExcelJS from "exceljs";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -39,6 +39,7 @@ function AdminComplaintsPage() {
     status: searchParams.get("status") || "",
     priority: "",
     search: "",
+    overdueOnly: false,
   });
 
   const fetchComplaints = async () => {
@@ -48,6 +49,7 @@ function AdminComplaintsPage() {
       if (filters.status) params.status = filters.status;
       if (filters.priority) params.priority = filters.priority;
       if (filters.search) params.search = filters.search;
+      if (filters.overdueOnly) params.overdueOnly = "true";
 
       const res = await api.get("/api/admin/complaints", { params });
       setComplaints(res.data.complaints);
@@ -61,12 +63,14 @@ function AdminComplaintsPage() {
   useEffect(() => {
     fetchComplaints();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.status, filters.priority]);
+  }, [filters.status, filters.priority, filters.overdueOnly]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     fetchComplaints();
   };
+
+  const overdueCount = complaints.filter((c) => c.isOverdue).length;
 
   const handleExportExcel = async () => {
     if (complaints.length === 0) return;
@@ -80,10 +84,11 @@ function AdminComplaintsPage() {
       { header: "Department", key: "department", width: 16 },
       { header: "Employee", key: "employee", width: 18 },
       { header: "Reports", key: "reportCount", width: 10 },
+      { header: "Overdue", key: "overdue", width: 10 },
       { header: "Date", key: "date", width: 14 },
     ];
     const colCount = columns.length;
-    const lastColLetter = String.fromCharCode(64 + colCount); // e.g. 9 columns -> "I"
+    const lastColLetter = String.fromCharCode(64 + colCount);
 
     const workbook = new ExcelJS.Workbook();
     workbook.creator = "Smart Citizen Grievance Management System";
@@ -92,7 +97,6 @@ function AdminComplaintsPage() {
 
     sheet.columns = columns.map((c) => ({ key: c.key, width: c.width }));
 
-    // Title block — merged, centered, bold, on-brand colors
     sheet.mergeCells(`A1:${lastColLetter}1`);
     sheet.getCell("A1").value = "Smart Citizen Grievance Management System";
     sheet.getCell("A1").font = { bold: true, size: 16, color: { argb: `FF${THEME.ink}` } };
@@ -115,10 +119,8 @@ function AdminComplaintsPage() {
     sheet.getCell("A3").alignment = { horizontal: "center", vertical: "middle" };
     sheet.getRow(3).height = 18;
 
-    // Blank spacer row
     sheet.getRow(4).height = 8;
 
-    // Header row for the actual table (row 5)
     const headerRow = sheet.getRow(5);
     columns.forEach((col, i) => {
       const cell = headerRow.getCell(i + 1);
@@ -139,9 +141,9 @@ function AdminComplaintsPage() {
         department: c.department || "Unassigned",
         employee: c.assignedEmployee?.fullName || "Unassigned",
         reportCount: c.reportCount || 1,
+        overdue: c.isOverdue ? "Yes" : "No",
         date: new Date(c.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
       });
-      // Soft alternating row shading, matching the app's paper background
       if (index % 2 === 0) {
         row.eachCell((cell) => {
           cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: `FF${THEME.paper}` } };
@@ -174,19 +176,18 @@ function AdminComplaintsPage() {
     const pageWidth = doc.internal.pageSize.getWidth();
     const centerX = pageWidth / 2;
 
-    // Title block — centered, bold, on-brand colors
     doc.setFont("helvetica", "bold");
     doc.setFontSize(17);
-    doc.setTextColor(20, 35, 48); // ink
+    doc.setTextColor(20, 35, 48);
     doc.text("Smart Citizen Grievance Management System", centerX, 16, { align: "center" });
 
     doc.setFontSize(12);
-    doc.setTextColor(193, 85, 44); // signal
+    doc.setTextColor(193, 85, 44);
     doc.text("Complaints Report", centerX, 23, { align: "center" });
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    doc.setTextColor(91, 107, 116); // slate
+    doc.setTextColor(91, 107, 116);
     doc.text(
       `Generated on ${new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })} — ${complaints.length} complaint(s)`,
       centerX,
@@ -194,13 +195,12 @@ function AdminComplaintsPage() {
       { align: "center" }
     );
 
-    // Thin rule under the header, in the theme's line color
-    doc.setDrawColor(222, 218, 205); // line
+    doc.setDrawColor(222, 218, 205);
     doc.line(14, 33, pageWidth - 14, 33);
 
     autoTable(doc, {
       startY: 38,
-      head: [["Complaint No", "Citizen", "Category", "Priority", "Status", "Department", "Employee", "Date"]],
+      head: [["Complaint No", "Citizen", "Category", "Priority", "Status", "Department", "Employee", "Overdue", "Date"]],
       body: complaints.map((c) => [
         c.complaintNumber,
         c.citizen?.fullName || "Unknown",
@@ -209,11 +209,12 @@ function AdminComplaintsPage() {
         c.status,
         c.department || "—",
         c.assignedEmployee?.fullName || "—",
+        c.isOverdue ? "Yes" : "No",
         new Date(c.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
       ]),
       styles: { fontSize: 8, halign: "center" },
       headStyles: { fillColor: [20, 35, 48], textColor: [255, 255, 255], fontStyle: "bold" },
-      alternateRowStyles: { fillColor: [247, 244, 236] }, // paper
+      alternateRowStyles: { fillColor: [247, 244, 236] },
     });
 
     const dateStr = new Date().toISOString().split("T")[0];
@@ -225,9 +226,14 @@ function AdminComplaintsPage() {
 
   return (
     <AdminLayout breadcrumb="Complaints">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h1 className="font-display text-2xl text-ink">Complaints</h1>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          {overdueCount > 0 && (
+            <span className="flex items-center gap-1 text-sm text-error font-medium">
+              <AlertTriangle size={14} /> {overdueCount} overdue
+            </span>
+          )}
           <p className="text-sm text-slate">{complaints.length} total</p>
           <button
             onClick={handleExportExcel}
@@ -247,7 +253,7 @@ function AdminComplaintsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-5">
+      <div className="flex flex-wrap items-center gap-3 mb-5">
         <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 flex-1 min-w-[220px]">
           <div className="flex items-center gap-2 bg-white border border-line rounded-lg px-3 py-2 flex-1">
             <Search size={15} className="text-slate" />
@@ -282,6 +288,15 @@ function AdminComplaintsPage() {
             <option key={p} value={p}>{p}</option>
           ))}
         </select>
+
+        <label className="flex items-center gap-2 bg-white border border-line rounded-lg px-3 py-2 text-sm text-ink cursor-pointer">
+          <input
+            type="checkbox"
+            checked={filters.overdueOnly}
+            onChange={(e) => setFilters({ ...filters, overdueOnly: e.target.checked })}
+          />
+          Overdue only (7+ days, no action)
+        </label>
       </div>
 
       <div className="bg-white border border-line rounded-2xl overflow-hidden">
@@ -307,9 +322,14 @@ function AdminComplaintsPage() {
               </thead>
               <tbody>
                 {complaints.map((c) => (
-                  <tr key={c._id} className="border-b border-line last:border-0 hover:bg-ink/5">
+                  <tr
+                    key={c._id}
+                    className={`border-b border-line last:border-0 hover:bg-ink/5 ${
+                      c.isOverdue ? "bg-error/5" : ""
+                    }`}
+                  >
                     <td className="px-4 py-3 font-mono text-xs text-slate">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         {c.complaintNumber}
                         {c.reportCount > 1 && (
                           <span
@@ -317,6 +337,14 @@ function AdminComplaintsPage() {
                             className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-signal/10 text-signal font-sans"
                           >
                             <Users size={10} /> {c.reportCount}
+                          </span>
+                        )}
+                        {c.isOverdue && (
+                          <span
+                            title="Overdue — no action in 7+ days"
+                            className="flex items-center gap-0.5 text-[10px] font-sans font-medium text-error bg-error/10 px-1.5 py-0.5 rounded-full"
+                          >
+                            <AlertTriangle size={9} /> Overdue
                           </span>
                         )}
                       </div>
