@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Eye, Search, Users } from "lucide-react";
+import { Eye, Search, Users, AlertTriangle } from "lucide-react";
 import AdminLayout from "../components/layout/AdminLayout";
 import api from "../services/api";
 import { COMPLAINT_STATUS_LIST } from "../shared/constants/complaintStatus";
@@ -26,6 +26,7 @@ function AdminComplaintsPage() {
     status: searchParams.get("status") || "",
     priority: "",
     search: "",
+    overdueOnly: false,
   });
 
   const fetchComplaints = async () => {
@@ -35,6 +36,7 @@ function AdminComplaintsPage() {
       if (filters.status) params.status = filters.status;
       if (filters.priority) params.priority = filters.priority;
       if (filters.search) params.search = filters.search;
+      if (filters.overdueOnly) params.overdueOnly = "true";
 
       const res = await api.get("/api/admin/complaints", { params });
       setComplaints(res.data.complaints);
@@ -48,12 +50,14 @@ function AdminComplaintsPage() {
   useEffect(() => {
     fetchComplaints();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.status, filters.priority]);
+  }, [filters.status, filters.priority, filters.overdueOnly]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     fetchComplaints();
   };
+
+  const overdueCount = complaints.filter((c) => c.isOverdue).length;
 
   const inputClass =
     "px-3 py-2 bg-white border border-line rounded-lg text-ink text-sm focus:outline-none focus:border-ink";
@@ -62,11 +66,18 @@ function AdminComplaintsPage() {
     <AdminLayout breadcrumb="Complaints">
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-2xl text-ink">Complaints</h1>
-        <p className="text-sm text-slate">{complaints.length} total</p>
+        <div className="flex items-center gap-3 text-sm text-slate">
+          {overdueCount > 0 && (
+            <span className="flex items-center gap-1 text-error font-medium">
+              <AlertTriangle size={14} /> {overdueCount} overdue
+            </span>
+          )}
+          <p>{complaints.length} total</p>
+        </div>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-5">
+      <div className="flex flex-wrap items-center gap-3 mb-5">
         <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 flex-1 min-w-[220px]">
           <div className="flex items-center gap-2 bg-white border border-line rounded-lg px-3 py-2 flex-1">
             <Search size={15} className="text-slate" />
@@ -101,6 +112,15 @@ function AdminComplaintsPage() {
             <option key={p} value={p}>{p}</option>
           ))}
         </select>
+
+        <label className="flex items-center gap-2 bg-white border border-line rounded-lg px-3 py-2 text-sm text-ink cursor-pointer">
+          <input
+            type="checkbox"
+            checked={filters.overdueOnly}
+            onChange={(e) => setFilters({ ...filters, overdueOnly: e.target.checked })}
+          />
+          Overdue only (7+ days, no action)
+        </label>
       </div>
 
       <div className="bg-white border border-line rounded-2xl overflow-hidden">
@@ -126,9 +146,14 @@ function AdminComplaintsPage() {
               </thead>
               <tbody>
                 {complaints.map((c) => (
-                  <tr key={c._id} className="border-b border-line last:border-0 hover:bg-ink/5">
+                  <tr
+                    key={c._id}
+                    className={`border-b border-line last:border-0 hover:bg-ink/5 ${
+                      c.isOverdue ? "bg-error/5" : ""
+                    }`}
+                  >
                     <td className="px-4 py-3 font-mono text-xs text-slate">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         {c.complaintNumber}
                         {c.reportCount > 1 && (
                           <span
@@ -136,6 +161,14 @@ function AdminComplaintsPage() {
                             className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-signal/10 text-signal font-sans"
                           >
                             <Users size={10} /> {c.reportCount}
+                          </span>
+                        )}
+                        {c.isOverdue && (
+                          <span
+                            title="Overdue — no action in 7+ days"
+                            className="flex items-center gap-0.5 text-[10px] font-sans font-medium text-error bg-error/10 px-1.5 py-0.5 rounded-full"
+                          >
+                            <AlertTriangle size={9} /> Overdue
                           </span>
                         )}
                       </div>

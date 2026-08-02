@@ -27,6 +27,7 @@ import {
   LifeBuoy,
   Megaphone,
   ArrowRight,
+  AlertTriangle,
 } from "lucide-react";
 import AdminLayout from "../components/layout/AdminLayout";
 import api from "../services/api";
@@ -90,9 +91,30 @@ function AdminDashboardPage() {
     { label: "Open Support Tickets", value: systemStatus?.openSupportTickets ?? 0, icon: LifeBuoy },
   ];
 
+  const overdueCount = kpis?.overdue ?? 0;
+
   return (
     <AdminLayout breadcrumb="Overview">
       <div className="space-y-8">
+        {/* Overdue Alert Banner */}
+        {!loading && overdueCount > 0 && (
+          <Link
+            to="/admin/complaints"
+            className="flex items-center gap-3 bg-error/10 border border-error/30 rounded-2xl px-5 py-4 hover:bg-error/15 transition-colors"
+          >
+            <AlertTriangle size={20} className="text-error shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-error">
+                {overdueCount} complaint{overdueCount === 1 ? " has" : "s have"} been pending for over 7 days
+              </p>
+              <p className="text-xs text-error/80 mt-0.5">
+                These complaints are still "Submitted" with no action taken. Click to review them.
+              </p>
+            </div>
+            <ArrowRight size={16} className="text-error shrink-0" />
+          </Link>
+        )}
+
         {/* KPI Cards */}
         <div>
           <h2 className="font-display text-lg text-ink mb-3">Complaint Overview</h2>
@@ -107,6 +129,26 @@ function AdminDashboardPage() {
                 <p className="text-[10px] text-slate/50 mt-1">— vs last period</p>
               </div>
             ))}
+
+            {/* Overdue card, styled distinctly since it needs attention */}
+            <div
+              className={`bg-white border rounded-2xl p-4 ${
+                overdueCount > 0 ? "border-error/40 bg-error/5" : "border-line"
+              }`}
+            >
+              <div
+                className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${
+                  overdueCount > 0 ? "bg-error/15" : "bg-ink/5"
+                }`}
+              >
+                <AlertTriangle size={16} className={overdueCount > 0 ? "text-error" : "text-ink"} />
+              </div>
+              <p className={`text-xl font-display ${overdueCount > 0 ? "text-error" : "text-ink"}`}>
+                {loading ? "…" : overdueCount}
+              </p>
+              <p className="text-xs text-slate mt-1">Overdue</p>
+              <p className="text-[10px] text-slate/50 mt-1">7+ days, no action</p>
+            </div>
           </div>
         </div>
 
