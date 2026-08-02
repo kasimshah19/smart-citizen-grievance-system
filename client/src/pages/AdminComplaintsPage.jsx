@@ -1,13 +1,23 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Eye, Search, Users, FileSpreadsheet, FileDown } from "lucide-react";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import AdminLayout from "../components/layout/AdminLayout";
 import api from "../services/api";
 import { COMPLAINT_STATUS_LIST } from "../shared/constants/complaintStatus";
 import { PRIORITIES_LIST } from "../shared/constants/priorities";
+
+// Nagrik theme colors, as hex (no leading #) — used to style the exported reports
+const THEME = {
+  ink: "142330",
+  signal: "C1552C",
+  paper: "F7F4EC",
+  slate: "5B6B74",
+  line: "DEDACD",
+  white: "FFFFFF",
+};
 
 const STATUS_COLORS = {
   Submitted: "bg-slate/10 text-slate",
@@ -58,55 +68,138 @@ function AdminComplaintsPage() {
     fetchComplaints();
   };
 
-  const buildExportRows = () =>
-    complaints.map((c) => ({
-      "Complaint No": c.complaintNumber,
-      Citizen: c.citizen?.fullName || "Unknown",
-      Category: c.category,
-      Priority: c.priority,
-      Status: c.status,
-      Department: c.department || "Unassigned",
-      Employee: c.assignedEmployee?.fullName || "Unassigned",
-      Reports: c.reportCount || 1,
-      Date: new Date(c.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
-    }));
+  const handleExportExcel = async () => {
+    if (complaints.length === 0) return;
 
-  const handleExportExcel = () => {
-    const rows = buildExportRows();
-    if (rows.length === 0) return;
+    const columns = [
+      { header: "Complaint No", key: "complaintNumber", width: 18 },
+      { header: "Citizen", key: "citizen", width: 18 },
+      { header: "Category", key: "category", width: 18 },
+      { header: "Priority", key: "priority", width: 12 },
+      { header: "Status", key: "status", width: 16 },
+      { header: "Department", key: "department", width: 16 },
+      { header: "Employee", key: "employee", width: 18 },
+      { header: "Reports", key: "reportCount", width: 10 },
+      { header: "Date", key: "date", width: 14 },
+    ];
+    const colCount = columns.length;
+    const lastColLetter = String.fromCharCode(64 + colCount); // e.g. 9 columns -> "I"
 
-    const worksheet = XLSX.utils.json_to_sheet(rows);
-    // Roughly auto-size each column based on its longest value
-    worksheet["!cols"] = Object.keys(rows[0]).map((key) => ({
-      wch: Math.max(key.length, ...rows.map((row) => String(row[key] ?? "").length)) + 2,
-    }));
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = "Smart Citizen Grievance Management System";
+    workbook.created = new Date();
+    const sheet = workbook.addWorksheet("Complaints");
 
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Complaints");
+    sheet.columns = columns.map((c) => ({ key: c.key, width: c.width }));
 
-    const dateStr = new Date().toISOString().split("T")[0];
-    XLSX.writeFile(workbook, `complaints-report-${dateStr}.xlsx`);
+    // Title block — merged, centered, bold, on-brand colors
+    sheet.mergeCells(`A1:${lastColLetter}1`);
+    sheet.getCell("A1").value = "Smart Citizen Grievance Management System";
+    sheet.getCell("A1").font = { bold: true, size: 16, color: { argb: `FF${THEME.ink}` } };
+    sheet.getCell("A1").alignment = { horizontal: "center", vertical: "middle" };
+    sheet.getRow(1).height = 26;
+
+    sheet.mergeCells(`A2:${lastColLetter}2`);
+    sheet.getCell("A2").value = "Complaints Report";
+    sheet.getCell("A2").font = { bold: true, size: 13, color: { argb: `FF${THEME.signal}` } };
+    sheet.getCell("A2").alignment = { horizontal: "center", vertical: "middle" };
+    sheet.getRow(2).height = 20;
+
+    sheet.mergeCells(`A3:${lastColLetter}3`);
+    sheet.getCell("A3").value = `Generated on ${new Date().toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    })} — ${complaints.length} complaint(s)`;
+    sheet.getCell("A3").font = { italic: true, size: 10, color: { argb: `FF${THEME.slate}` } };
+    sheet.getCell("A3").alignment = { horizontal: "center", vertical: "middle" };
+    sheet.getRow(3).height = 18;
+
+    // Blank spacer row
+    sheet.getRow(4).height = 8;
+
+    // Header row for the actual table (row 5)
+    const headerRow = sheet.getRow(5);
+    columns.forEach((col, i) => {
+      const cell = headerRow.getCell(i + 1);
+      cell.value = col.header;
+      cell.font = { bold: true, color: { argb: `FF${THEME.white}` } };
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: `FF${THEME.ink}` } };
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+    });
+    headerRow.height = 22;
+
+    complaints.forEach((c, index) => {
+      const row = sheet.addRow({
+        complaintNumber: c.complaintNumber,
+        citizen: c.citizen?.fullName || "Unknown",
+        category: c.category,
+        priority: c.priority,
+        status: c.status,
+        department: c.department || "Unassigned",
+        employee: c.assignedEmployee?.fullName || "Unassigned",
+        reportCount: c.reportCount || 1,
+        date: new Date(c.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
+      });
+      // Soft alternating row shading, matching the app's paper background
+      if (index % 2 === 0) {
+        row.eachCell((cell) => {
+          cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: `FF${THEME.paper}` } };
+        });
+      }
+      row.eachCell((cell) => {
+        cell.alignment = { horizontal: "center", vertical: "middle" };
+        cell.border = { bottom: { style: "thin", color: { argb: `FF${THEME.line}` } } };
+      });
+    });
+
+    sheet.autoFilter = { from: "A5", to: `${lastColLetter}5` };
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `complaints-report-${new Date().toISOString().split("T")[0]}.xlsx`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleExportPDF = () => {
     if (complaints.length === 0) return;
 
     const doc = new jsPDF({ orientation: "landscape" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const centerX = pageWidth / 2;
 
-    doc.setFontSize(15);
-    doc.text("Smart Citizen Grievance Management System", 14, 15);
-    doc.setFontSize(11);
-    doc.setTextColor(90);
-    doc.text("Complaints Report", 14, 22);
+    // Title block — centered, bold, on-brand colors
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(17);
+    doc.setTextColor(20, 35, 48); // ink
+    doc.text("Smart Citizen Grievance Management System", centerX, 16, { align: "center" });
+
+    doc.setFontSize(12);
+    doc.setTextColor(193, 85, 44); // signal
+    doc.text("Complaints Report", centerX, 23, { align: "center" });
+
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
+    doc.setTextColor(91, 107, 116); // slate
     doc.text(
       `Generated on ${new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })} — ${complaints.length} complaint(s)`,
-      14,
-      28
+      centerX,
+      29,
+      { align: "center" }
     );
 
+    // Thin rule under the header, in the theme's line color
+    doc.setDrawColor(222, 218, 205); // line
+    doc.line(14, 33, pageWidth - 14, 33);
+
     autoTable(doc, {
-      startY: 34,
+      startY: 38,
       head: [["Complaint No", "Citizen", "Category", "Priority", "Status", "Department", "Employee", "Date"]],
       body: complaints.map((c) => [
         c.complaintNumber,
@@ -118,8 +211,9 @@ function AdminComplaintsPage() {
         c.assignedEmployee?.fullName || "—",
         new Date(c.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
       ]),
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [20, 35, 48] },
+      styles: { fontSize: 8, halign: "center" },
+      headStyles: { fillColor: [20, 35, 48], textColor: [255, 255, 255], fontStyle: "bold" },
+      alternateRowStyles: { fillColor: [247, 244, 236] }, // paper
     });
 
     const dateStr = new Date().toISOString().split("T")[0];
