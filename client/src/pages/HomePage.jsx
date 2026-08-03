@@ -11,6 +11,9 @@ function HomePage() {
           Nagrik<span className="text-signal">.</span>
         </span>
         <nav className="flex gap-3 text-sm items-center">
+          <Link to="/community" className="px-4 py-2 text-ink hover:text-signal transition-colors">
+            Community Feed
+          </Link>
           {citizen ? (
             <>
               <Link to="/dashboard" className="px-4 py-2 text-ink hover:text-signal transition-colors">

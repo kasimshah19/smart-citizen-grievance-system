@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
+import PublicFeedPage from "./pages/PublicFeedPage";
 import SignupPage from "./pages/SignupPage";
 import LoginPage from "./pages/LoginPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
@@ -24,8 +25,8 @@ import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminSupportTicketsPage from "./pages/AdminSupportTicketsPage";
 import AdminAnnouncementsPage from "./pages/AdminAnnouncementsPage";
 import AdminAnalyticsPage from "./pages/AdminAnalyticsPage";
-import AdminSettingsPage from "./pages/AdminSettingsPage";
 import AdminMapPage from "./pages/AdminMapPage";
+import AdminSettingsPage from "./pages/AdminSettingsPage";
 import EmployeeRoute from "./components/common/EmployeeRoute";
 import EmployeeDashboardPage from "./pages/EmployeeDashboardPage";
 import EmployeeComplaintsPage from "./pages/EmployeeComplaintsPage";
@@ -39,6 +40,7 @@ function App() {
     <Routes>
       {/* Public */}
       <Route path="/" element={<HomePage />} />
+      <Route path="/community" element={<PublicFeedPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -132,14 +134,6 @@ function App() {
         element={
           <AdminRoute>
             <AdminComplaintDetailPage />
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/map"
-        element={
-          <AdminRoute>
-            <AdminMapPage />
           </AdminRoute>
         }
       />
