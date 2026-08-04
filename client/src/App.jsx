@@ -146,6 +146,14 @@ function App() {
         }
       />
       <Route
+        path="/admin/map"
+        element={
+          <AdminRoute>
+            <AdminMapPage />
+          </AdminRoute>
+        }
+      />
+      <Route
         path="/admin/employees"
         element={
           <AdminRoute>

@@ -1,27 +1,36 @@
 const nodemailer = require("nodemailer");
 
-// If Gmail credentials aren't set in .env yet, this runs in "console mode"
-// (logs the email instead of sending it) — same pattern as the SMS service.
+// The transporter is created lazily (only when actually sending an email),
+// not at file-load time — this avoids a startup-order bug where .env
+// hadn't been loaded yet when this file was first required.
 let transporter = null;
 
-if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-  transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-}
+const getTransporter = () => {
+  if (transporter) return transporter;
+
+  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+  }
+
+  return transporter;
+};
 
 const sendEmail = async (to, subject, message) => {
-  if (!transporter) {
+  const activeTransporter = getTransporter();
+
+  if (!activeTransporter) {
     console.log(`\n[EMAIL to ${to}]: ${subject}\n${message}\n`);
     return { success: true, mode: "console" };
   }
 
   try {
-    await transporter.sendMail({
+    await activeTransporter.sendMail({
       from: `"Smart Citizen Grievance System" <${process.env.EMAIL_USER}>`,
       to,
       subject,
