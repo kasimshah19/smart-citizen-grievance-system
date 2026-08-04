@@ -4,6 +4,8 @@ const Notification = require("../notification/notification.model");
 const { COMPLAINT_STATUS_LIST } = require("../../shared/constants/complaintStatus");
 const { notifyCitizen } = require("../../socket");
 const { isComplaintOverdue } = require("../../shared/utils/sla");
+const { sendEmail } = require("../../shared/services/email.service");
+const Citizen = require("../auth/citizen.model");
 
 // List all complaints across every citizen, with optional filters
 const getAllComplaints = async (req, res) => {
@@ -114,6 +116,20 @@ const assignComplaint = async (req, res) => {
     });
     notifyCitizen(complaint.citizen, "notification:new");
 
+    // Send an email to the citizen — never let an email failure block the response
+    Citizen.findById(complaint.citizen)
+      .select("email fullName")
+      .then((citizenDoc) => {
+        if (citizenDoc?.email) {
+          sendEmail(
+            citizenDoc.email,
+            `Complaint ${complaint.complaintNumber} Assigned`,
+            `Hi ${citizenDoc.fullName}, your complaint <b>${complaint.complaintNumber}</b> has been assigned to the <b>${department.trim()}</b> department.`
+          );
+        }
+      })
+      .catch((err) => console.error("Email lookup failed:", err.message));
+
     return res.status(200).json({ success: true, message: "Complaint assigned successfully", complaint });
   } catch (error) {
     console.error(error);
@@ -163,6 +179,20 @@ const updateComplaintStatus = async (req, res) => {
       department: complaint.department,
     });
     notifyCitizen(complaint.citizen, "notification:new");
+
+    // Send an email to the citizen — never let an email failure block the response
+    Citizen.findById(complaint.citizen)
+      .select("email fullName")
+      .then((citizenDoc) => {
+        if (citizenDoc?.email) {
+          sendEmail(
+            citizenDoc.email,
+            `Complaint ${complaint.complaintNumber} Status Updated`,
+            `Hi ${citizenDoc.fullName}, your complaint <b>${complaint.complaintNumber}</b> is now <b>${status}</b>.`
+          );
+        }
+      })
+      .catch((err) => console.error("Email lookup failed:", err.message));
 
     return res.status(200).json({ success: true, message: "Status updated successfully", complaint });
   } catch (error) {
