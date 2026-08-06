@@ -27,7 +27,7 @@ function FlyTo({ target }) {
   useEffect(() => {
     if (!target) return;
     if (target.bounds) {
-      map.fitBounds(target.bounds, { padding: [50, 50], maxZoom: 15 });
+      map.fitBounds(target.bounds, { padding: [50, 50], maxZoom: 16 });
     } else {
       map.flyTo([target.lat, target.lng], target.zoom || 13);
     }
@@ -44,6 +44,7 @@ function AdminMapPage() {
   const [searching, setSearching] = useState(false);
   const [searchNote, setSearchNote] = useState("");
   const [flyTarget, setFlyTarget] = useState(null);
+  const [mapView, setMapView] = useState("street"); // "street" | "satellite"
 
   useEffect(() => {
     const fetchPoints = async () => {
@@ -81,7 +82,7 @@ function AdminMapPage() {
 
     if (matches.length > 0) {
       if (matches.length === 1) {
-        setFlyTarget({ lat: matches[0].latitude, lng: matches[0].longitude, zoom: 15 });
+        setFlyTarget({ lat: matches[0].latitude, lng: matches[0].longitude, zoom: 16 });
       } else {
         const bounds = matches.map((p) => [p.latitude, p.longitude]);
         setFlyTarget({ bounds });
@@ -101,7 +102,7 @@ function AdminMapPage() {
       const results = await res.json();
 
       if (results.length > 0) {
-        setFlyTarget({ lat: parseFloat(results[0].lat), lng: parseFloat(results[0].lon), zoom: 12 });
+        setFlyTarget({ lat: parseFloat(results[0].lat), lng: parseFloat(results[0].lon), zoom: 16 });
         setSearchNote(`No complaints in "${query}" yet — showing the area on the map`);
       } else {
         setSearchNote(`Couldn't find "${query}" — try a different spelling or a nearby place`);
@@ -172,8 +173,34 @@ function AdminMapPage() {
           >
             {searching ? "Searching…" : "Go"}
           </button>
+          <div className="flex border border-line rounded-lg overflow-hidden shrink-0">
+            <button
+              type="button"
+              onClick={() => setMapView("street")}
+              className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+                mapView === "street" ? "bg-ink text-paper" : "bg-white text-slate hover:text-ink"
+              }`}
+            >
+              Street
+            </button>
+            <button
+              type="button"
+              onClick={() => setMapView("satellite")}
+              className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+                mapView === "satellite" ? "bg-ink text-paper" : "bg-white text-slate hover:text-ink"
+              }`}
+            >
+              Satellite
+            </button>
+          </div>
         </div>
         {searchNote && <p className="text-xs text-slate mt-2">{searchNote}</p>}
+        {mapView === "satellite" && (
+          <p className="text-xs text-slate mt-2">
+            Satellite photo detail depends on coverage in that area — very rural spots may show
+            "map data not yet available" at close zoom. Switch to Street if that happens.
+          </p>
+        )}
       </form>
 
       <div className="bg-white border border-line rounded-2xl overflow-hidden relative" style={{ height: "600px" }}>
@@ -188,10 +215,20 @@ function AdminMapPage() {
               </div>
             )}
             <MapContainer center={mapCenter} zoom={12} style={{ height: "100%", width: "100%" }}>
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
+              {mapView === "satellite" ? (
+                <TileLayer
+                  attribution="Tiles &copy; Esri — Esri, Maxar, Earthstar Geographics"
+                  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                  maxNativeZoom={19}
+                  maxZoom={20}
+                />
+              ) : (
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  maxZoom={19}
+                />
+              )}
               <FlyTo target={flyTarget} />
               {points.map((point) => (
                 <CircleMarker
