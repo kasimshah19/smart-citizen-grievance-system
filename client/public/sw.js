@@ -1,13 +1,13 @@
 const CACHE_NAME = "nagrik-cache-v1";
 const OFFLINE_URL = "/";
-
+ 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(["/", "/manifest.json", "/icon.svg"]))
   );
 });
-
+ 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -16,13 +16,18 @@ self.addEventListener("activate", (event) => {
   );
   self.clients.claim();
 });
-
+ 
 self.addEventListener("fetch", (event) => {
   const { request } = event;
-
+ 
+  // Only handle plain http/https GET requests. Browser extensions can inject
+  // requests with other schemes (chrome-extension://, moz-extension://, etc.)
+  // and the Cache API throws if we ever try to cache those.
+  if (!request.url.startsWith("http") || request.method !== "GET") return;
+ 
   // Never cache API calls — always go to the network so data stays fresh
-  if (request.url.includes("/api/") || request.method !== "GET") return;
-
+  if (request.url.includes("/api/")) return;
+ 
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;
