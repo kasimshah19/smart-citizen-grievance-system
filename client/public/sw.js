@@ -21,11 +21,11 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
  
   // Only handle plain http/https GET requests. Browser extensions can inject
-  // requests with other schemes (chrome-extension://, moz-extension://, etc.)
+  // requests with other schemes (chrome-extension, moz-extension, etc.)
   // and the Cache API throws if we ever try to cache those.
   if (!request.url.startsWith("http") || request.method !== "GET") return;
  
-  // Never cache API calls — always go to the network so data stays fresh
+  // Never cache API calls - always go to the network so data stays fresh
   if (request.url.includes("/api/")) return;
  
   event.respondWith(
