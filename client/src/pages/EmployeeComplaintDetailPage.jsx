@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, MapPin, Calendar, Tag, AlertCircle, Clock, User } from "lucide-react";
 import EmployeeLayout from "../components/layout/EmployeeLayout";
-import api from "../services/api";
+import api, { API_BASE_URL } from "../services/api";
 
 const STATUS_COLORS = {
   Assigned: "bg-slate/10 text-slate",
@@ -85,7 +85,7 @@ function EmployeeComplaintDetailPage() {
     );
   }
 
-  const photoUrl = complaint.photoUrl ? `http://localhost:5000${complaint.photoUrl}` : null;
+  const photoUrl = complaint.photoUrl ? `${API_BASE_URL}${complaint.photoUrl}` : null;
 
   return (
     <EmployeeLayout breadcrumb="Complaint Detail">
