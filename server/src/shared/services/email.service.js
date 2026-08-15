@@ -1,51 +1,43 @@
-const nodemailer = require("nodemailer");
-
-// The transporter is created lazily (only when actually sending an email),
-// not at file-load time — this avoids a startup-order bug where .env
-// hadn't been loaded yet when this file was first required.
-let transporter = null;
-
-const getTransporter = () => {
-  if (transporter) return transporter;
-
-  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-    transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-      connectionTimeout: 5000, // Fail fast in 5 seconds if SMTP is blocked (e.g. Render)
-      greetingTimeout: 5000,
-      socketTimeout: 5000,
-    });
-  }
-
-  return transporter;
-};
-
 const sendEmail = async (to, subject, message) => {
-  const activeTransporter = getTransporter();
+  const BREVO_API_KEY = process.env.BREVO_API_KEY;
+  const BREVO_SENDER = process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_USER;
 
-  if (!activeTransporter) {
-    console.log(`\n[EMAIL to ${to}]: ${subject}\n${message}\n`);
+  if (!BREVO_API_KEY) {
+    console.log(`\n[EMAIL BLOCKED - FALLBACK for ${to}]: ${subject}\n${message}\n`);
     return { success: true, mode: "console" };
   }
 
   try {
-    await activeTransporter.sendMail({
-      from: `"Smart Citizen Grievance System" <${process.env.EMAIL_USER}>`,
-      to,
-      subject,
-      html: `<div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
-        <h2 style="color:#142330;">Smart Citizen Grievance Management System</h2>
-        <p style="color:#333; font-size:15px; line-height:1.5;">${message}</p>
-        <p style="color:#999; font-size:12px; margin-top:24px;">This is an automated email. Please do not reply.</p>
-      </div>`,
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "api-key": BREVO_API_KEY,
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        sender: {
+          name: "Smart Citizen Grievance System",
+          email: BREVO_SENDER
+        },
+        to: [{ email: to }],
+        subject: subject,
+        htmlContent: `<div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+          <h2 style="color:#142330;">Smart Citizen Grievance Management System</h2>
+          <p style="color:#333; font-size:15px; line-height:1.5;">${message}</p>
+          <p style="color:#999; font-size:12px; margin-top:24px;">This is an automated email. Please do not reply.</p>
+        </div>`
+      })
     });
-    return { success: true, mode: "smtp" };
+
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new Error(JSON.stringify(errData));
+    }
+
+    return { success: true, mode: "brevo-http" };
   } catch (error) {
-    console.error("Failed to send email:", error.message);
+    console.error("Failed to send email via Brevo:", error.message);
     console.log(`\n[EMAIL BLOCKED - FALLBACK for ${to}]: ${subject}\n${message}\n`);
     return { success: false, error: error.message };
   }
