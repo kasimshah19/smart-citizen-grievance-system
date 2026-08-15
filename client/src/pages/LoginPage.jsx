@@ -9,7 +9,7 @@ import { Helmet } from "react-helmet-async";
 function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

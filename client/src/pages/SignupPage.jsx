@@ -6,7 +6,7 @@ import { Helmet } from "react-helmet-async";
 
 function SignupPage() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [formData, setFormData] = useState({
     fullName: "",
