@@ -205,7 +205,7 @@ function AdminTopNav({ onMenuClick, breadcrumb }) {
           </button>
 
           {alertsOpen && (
-            <div className="absolute right-0 mt-2 w-72 bg-white border border-line rounded-xl shadow-lg py-2 z-30">
+            <div className="absolute -right-14 sm:right-0 mt-2 w-[280px] sm:w-72 bg-white border border-line rounded-xl shadow-lg py-2 z-30">
               <p className="px-4 py-2 text-xs font-medium text-ink border-b border-line">Needs Attention</p>
               {!hasAlerts ? (
                 <p className="px-4 py-4 text-sm text-slate text-center">You're all caught up 🎉</p>
