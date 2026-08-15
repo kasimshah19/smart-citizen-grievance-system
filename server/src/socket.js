@@ -9,7 +9,7 @@ const init = (server) => {
   const { Server } = require("socket.io");
 
   io = new Server(server, {
-    cors: { origin: "*" },
+    cors: { origin: process.env.CLIENT_URL || "*", credentials: true },
   });
 
   io.on("connection", (socket) => {
@@ -25,7 +25,7 @@ const init = (server) => {
       }
     }
 
-    socket.on("disconnect", () => {});
+    socket.on("disconnect", () => { });
   });
 
   return io;
