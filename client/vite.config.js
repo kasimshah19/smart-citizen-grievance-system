@@ -31,7 +31,26 @@ export default defineConfig({
         ]
       },
       workbox: {
-        maximumFileSizeToCacheInBytes: 5000000 // 5MB
+        maximumFileSizeToCacheInBytes: 5000000, // 5MB
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,woff}'],
+        navigateFallback: '/index.html',
+        runtimeCaching: [
+          {
+            // Cache public community feed API calls for offline viewing
+            urlPattern: /^https:\/\/smart-citizen-grievance-system\.onrender\.com\/api\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          }
+        ]
       }
     })
   ],

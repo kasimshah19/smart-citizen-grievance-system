@@ -6,6 +6,7 @@ import "./index.css";
 import App from "./App.jsx";
 import { AuthProvider } from "./contexts/AuthContext.jsx";
 import { ThemeProvider } from "./contexts/ThemeContext.jsx";
+import { registerSW } from "virtual:pwa-register";
 import "./i18n";
 
 createRoot(document.getElementById("root")).render(
@@ -22,11 +23,12 @@ createRoot(document.getElementById("root")).render(
   </StrictMode>
 );
 
-// Register the service worker for offline support and installability (PWA)
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js").catch((err) => {
-      console.error("Service worker registration failed:", err);
-    });
-  });
-}
+// Use Vite PWA virtual module for robust registration and auto-updates
+const updateSW = registerSW({
+  onNeedRefresh() {
+    // Optional: Prompt user to refresh the app if there's a new version
+  },
+  onOfflineReady() {
+    console.log("App is ready to work offline.");
+  },
+});
