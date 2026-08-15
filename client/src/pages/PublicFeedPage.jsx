@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { Search, MapPin, Users, ChevronLeft, ChevronRight, ShieldCheck, Trophy, Sparkles } from "lucide-react";
 import api from "../services/api";
 import { COMPLAINT_CATEGORIES, STATUS_COLORS } from "../constants/complaint.constants";
+import { useAuth } from "../contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 function PublicFeedPage() {
   const [complaints, setComplaints] = useState([]);
@@ -10,6 +12,13 @@ function PublicFeedPage() {
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
   const [leaderboard, setLeaderboard] = useState([]);
+
+  const { citizen, logout } = useAuth();
+  const { t, i18n } = useTranslation();
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+  };
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
@@ -65,22 +74,53 @@ function PublicFeedPage() {
 
   return (
     <div className="min-h-screen bg-paper">
-      {/* Public header — same style as the landing page, no auth needed */}
-      <header className="border-b border-line px-6 py-5 flex items-center justify-between bg-paper">
-        <Link to="/" className="font-display text-lg tracking-tight text-ink">
-          Nagrik<span className="text-signal">.</span>
-        </Link>
-        <nav className="flex gap-3 text-sm items-center">
-          <Link to="/login" className="px-4 py-2 text-ink hover:text-signal transition-colors">
-            Log in
+      {/* Public header — same style as the landing page */}
+      <header className="border-b border-line bg-paper">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <Link to="/" className="font-display text-lg tracking-tight text-ink">
+            Nagrik<span className="text-signal">.</span>
           </Link>
-          <Link
-            to="/signup"
-            className="px-4 py-2 bg-ink text-paper rounded-full hover:bg-signal transition-colors"
-          >
-            Report an Issue
-          </Link>
-        </nav>
+          <nav className="flex flex-wrap justify-center gap-2 sm:gap-3 text-sm items-center">
+            {/* Language Switcher */}
+            <div className="flex bg-ink/5 rounded-full p-1 sm:mr-2">
+              <button
+                onClick={() => changeLanguage('en')}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${i18n.language.startsWith('en') ? 'bg-white shadow-sm text-ink' : 'text-slate hover:text-ink'}`}
+              >
+                EN
+              </button>
+              <button
+                onClick={() => changeLanguage('hi')}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${i18n.language.startsWith('hi') ? 'bg-white shadow-sm text-ink' : 'text-slate hover:text-ink'}`}
+              >
+                HI
+              </button>
+            </div>
+
+            {citizen ? (
+              <>
+                <Link to="/dashboard" className="px-4 py-2 text-ink hover:text-signal transition-colors">
+                  {t("nav.dashboard")}
+                </Link>
+                <button
+                  onClick={logout}
+                  className="px-4 py-2 border border-line rounded-full text-ink hover:border-ink transition-colors"
+                >
+                  {t("nav.log_out")}
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="px-4 py-2 text-ink hover:text-signal transition-colors">
+                  {t("nav.log_in")}
+                </Link>
+                <Link to="/signup" className="px-4 py-2 bg-ink text-paper rounded-full hover:bg-signal transition-colors">
+                  Report an Issue
+                </Link>
+              </>
+            )}
+          </nav>
+        </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-12">
