@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
+import { useTranslation } from "react-i18next";
 
 function SignupPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -113,12 +115,12 @@ function SignupPage() {
 
           <div className="px-8 pt-10 pb-8">
             <div className="flex items-center justify-between mb-1">
-              <h1 className="font-display text-2xl text-ink">Create your account</h1>
+              <h1 className="font-display text-2xl text-ink">{t("auth.signup_title")}</h1>
               <span className="font-mono text-[10px] uppercase tracking-widest text-slate border border-line rounded-full px-2 py-1">
-                Citizen
+                {t("auth.citizen_badge")}
               </span>
             </div>
-            <p className="text-slate text-sm mb-8">Smart Citizen Grievance Management System</p>
+            <p className="text-slate text-sm mb-8">{t("auth.signup_subtitle")}</p>
 
             {message && (
               <div className="mb-5 text-sm bg-ink/5 border border-line rounded-lg px-4 py-3 text-ink">
@@ -128,7 +130,7 @@ function SignupPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <input className={inputClass} name="fullName" placeholder="Full name" value={formData.fullName} onChange={handleChange} />
+                <input className={inputClass} name="fullName" placeholder={t("auth.full_name_label")} value={formData.fullName} onChange={handleChange} />
                 {errors.fullName && <p className="text-error text-xs mt-1">{errors.fullName}</p>}
               </div>
 
@@ -138,7 +140,7 @@ function SignupPage() {
                     className={inputClass}
                     name="email"
                     type="email"
-                    placeholder="Email address"
+                    placeholder={t("auth.email_label")}
                     value={formData.email}
                     onChange={handleChange}
                     disabled={emailVerified}
@@ -150,12 +152,12 @@ function SignupPage() {
                       disabled={loading || step === "otp"}
                       className="shrink-0 px-4 py-3 bg-ink text-paper rounded-lg text-sm font-medium hover:bg-signal transition-colors disabled:opacity-50"
                     >
-                      {step === "otp" ? "Sent" : "Send OTP"}
+                      {step === "otp" ? t("auth.otp_sent") : t("auth.send_otp")}
                     </button>
                   )}
                   {emailVerified && (
                     <span className="shrink-0 flex items-center gap-1 px-3 py-3 text-success text-sm font-medium -rotate-3">
-                      ✓ Verified
+                      {t("auth.verified_text")}
                     </span>
                   )}
                 </div>
@@ -166,7 +168,7 @@ function SignupPage() {
                 <div className="flex gap-2 bg-signal/5 border border-signal/30 rounded-lg p-3">
                   <input
                     className={`${inputClass} font-mono tracking-widest`}
-                    placeholder="6-digit code"
+                    placeholder={t("auth.enter_6_digit_code")}
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                   />
@@ -176,7 +178,7 @@ function SignupPage() {
                     disabled={loading}
                     className="shrink-0 px-4 py-3 bg-signal text-paper rounded-lg text-sm font-medium hover:bg-signal-dark transition-colors"
                   >
-                    Verify
+                    {t("auth.verify_btn")}
                   </button>
                 </div>
               )}
@@ -185,7 +187,7 @@ function SignupPage() {
                 <input
                   className={inputClass}
                   name="phone"
-                  placeholder="Mobile number"
+                  placeholder={t("auth.mobile_number_label")}
                   value={formData.phone}
                   onChange={handleChange}
                 />
@@ -194,19 +196,19 @@ function SignupPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <input className={inputClass} name="district" placeholder="District" value={formData.district} onChange={handleChange} />
+                  <input className={inputClass} name="district" placeholder={t("auth.district_label")} value={formData.district} onChange={handleChange} />
                   {errors.district && <p className="text-error text-xs mt-1">{errors.district}</p>}
                 </div>
                 <div>
-                  <input className={inputClass} name="taluka" placeholder="Taluka" value={formData.taluka} onChange={handleChange} />
+                  <input className={inputClass} name="taluka" placeholder={t("auth.taluka_label")} value={formData.taluka} onChange={handleChange} />
                   {errors.taluka && <p className="text-error text-xs mt-1">{errors.taluka}</p>}
                 </div>
                 <div>
-                  <input className={inputClass} name="city" placeholder="City" value={formData.city} onChange={handleChange} />
+                  <input className={inputClass} name="city" placeholder={t("auth.city_label")} value={formData.city} onChange={handleChange} />
                   {errors.city && <p className="text-error text-xs mt-1">{errors.city}</p>}
                 </div>
                 <div>
-                  <input className={inputClass} name="area" placeholder="Area" value={formData.area} onChange={handleChange} />
+                  <input className={inputClass} name="area" placeholder={t("auth.area_label")} value={formData.area} onChange={handleChange} />
                   {errors.area && <p className="text-error text-xs mt-1">{errors.area}</p>}
                 </div>
               </div>
@@ -217,7 +219,7 @@ function SignupPage() {
                     className={inputClass}
                     name="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Password"
+                    placeholder={t("auth.password_label")}
                     value={formData.password}
                     onChange={handleChange}
                   />
@@ -226,7 +228,7 @@ function SignupPage() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="shrink-0 px-4 py-3 border border-line rounded-lg text-sm text-slate hover:border-ink transition-colors"
                   >
-                    {showPassword ? "Hide" : "Show"}
+                    {showPassword ? t("auth.hide") : t("auth.show")}
                   </button>
                 </div>
                 {errors.password && <p className="text-error text-xs mt-1">{errors.password}</p>}
@@ -237,7 +239,7 @@ function SignupPage() {
                   className={inputClass}
                   name="confirmPassword"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Confirm password"
+                  placeholder={t("auth.confirm_password_label")}
                   value={formData.confirmPassword}
                   onChange={handleChange}
                 />
@@ -249,12 +251,12 @@ function SignupPage() {
                 disabled={!emailVerified || loading}
                 className="w-full py-3 bg-ink text-paper rounded-lg font-medium hover:bg-signal transition-colors disabled:opacity-40 disabled:cursor-not-allowed mt-2"
               >
-                {loading ? "Please wait…" : "Create account"}
+                {loading ? t("auth.please_wait") : t("auth.create_account_btn")}
               </button>
             </form>
 
             <p className="text-center text-sm text-slate mt-6">
-              Already have an account? <Link to="/login" className="text-ink font-medium hover:text-signal">Log in</Link>
+              {t("auth.already_have_account")} <Link to="/login" className="text-ink font-medium hover:text-signal">{t("nav.log_in")}</Link>
             </p>
           </div>
         </div>

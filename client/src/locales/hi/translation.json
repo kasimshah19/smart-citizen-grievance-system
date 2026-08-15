@@ -1,0 +1,52 @@
+{
+    "nav": {
+        "community_feed": "कम्युनिटी फ़ीड",
+        "dashboard": "डैशबोर्ड",
+        "log_out": "लॉग आउट",
+        "log_in": "लॉग इन",
+        "sign_up": "साइन अप"
+    },
+    "home": {
+        "subtitle": "नागरिक शिकायत रजिस्ट्री",
+        "title": "रिपोर्ट करें। ट्रैक करें।<br />समाधान पाएं।",
+        "description": "नागरिकों और आपके आस-पड़ोस में टूटी हुई चीज़ों को ठीक करने के लिए ज़िम्मेदार विभागों के बीच सीधा संपर्क।",
+        "go_to_dashboard": "डैशबोर्ड पर जाएं",
+        "create_account": "खाता बनाएं",
+        "already_have_one": "मेरे पास पहले से खाता है"
+    },
+    "auth": {
+        "login_title": "नागरिक में लॉग इन करें",
+        "signup_title": "खाता बनाएं",
+        "email_label": "ईमेल पता",
+        "password_label": "पासवर्ड",
+        "welcome_back": "वापसी पर स्वागत है",
+        "verify_its_you": "सत्यापित करें कि यह आप हैं",
+        "login_subtitle": "अपनी शिकायतों को ट्रैक और प्रबंधित करने के लिए लॉग इन करें",
+        "otp_subtitle": "अपने पंजीकृत ईमेल पते पर भेजा गया 6-अंकीय सत्यापन कोड दर्ज करें",
+        "hide": "छुपाएं",
+        "show": "दिखाएं",
+        "forgot_password": "पासवर्ड भूल गए?",
+        "continue": "जारी रखें",
+        "please_wait": "कृपया प्रतीक्षा करें…",
+        "enter_6_digit_code": "6-अंकीय कोड दर्ज करें",
+        "verifying": "सत्यापित किया जा रहा है…",
+        "verify_and_login": "सत्यापित करें और लॉग इन करें",
+        "back": "← वापस",
+        "no_account": "खाता नहीं है?",
+        "signup_subtitle": "स्मार्ट सिटीजन ग्रीवांस मैनेजमेंट सिस्टम",
+        "citizen_badge": "नागरिक",
+        "full_name_label": "पूरा नाम",
+        "mobile_number_label": "मोबाइल नंबर",
+        "district_label": "ज़िला",
+        "taluka_label": "तालुका",
+        "city_label": "शहर",
+        "area_label": "क्षेत्र",
+        "confirm_password_label": "पासवर्ड पुष्टि करें",
+        "send_otp": "OTP भेजें",
+        "otp_sent": "भेजा गया",
+        "verify_btn": "सत्यापित करें",
+        "verified_text": "✓ सत्यापित",
+        "create_account_btn": "खाता बनाएं",
+        "already_have_account": "क्या आपके पास पहले से खाता है?"
+    }
+}

@@ -3,10 +3,12 @@ import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 import { ROLES } from "../shared/constants/roles";
+import { useTranslation } from "react-i18next";
 
 function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { t } = useTranslation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -73,12 +75,12 @@ function LoginPage() {
 
         <div className="px-8 pt-10 pb-8">
           <h1 className="font-display text-2xl text-ink mb-1">
-            {step === "credentials" ? "Welcome back" : "Verify it's you"}
+            {step === "credentials" ? t("auth.welcome_back") : t("auth.verify_its_you")}
           </h1>
           <p className="text-slate text-sm mb-8">
             {step === "credentials"
-              ? "Log in to track and manage your complaints"
-              : "Enter the verification code sent to your registered email address"}
+              ? t("auth.login_subtitle")
+              : t("auth.otp_subtitle")}
           </p>
 
           {message && (
@@ -92,7 +94,7 @@ function LoginPage() {
               <input
                 className={inputClass}
                 type="email"
-                placeholder="Email address"
+                placeholder={t("auth.email_label")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -102,7 +104,7 @@ function LoginPage() {
                 <input
                   className={inputClass}
                   type={showPassword ? "text" : "password"}
-                  placeholder="Password"
+                  placeholder={t("auth.password_label")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -112,13 +114,13 @@ function LoginPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="shrink-0 px-4 py-3 border border-line rounded-lg text-sm text-slate hover:border-ink transition-colors"
                 >
-                  {showPassword ? "Hide" : "Show"}
+                  {showPassword ? t("auth.hide") : t("auth.show")}
                 </button>
               </div>
 
               <div className="text-right">
                 <Link to="/forgot-password" className="text-xs text-slate hover:text-signal transition-colors">
-                  Forgot password?
+                  {t("auth.forgot_password")}
                 </Link>
               </div>
 
@@ -127,7 +129,7 @@ function LoginPage() {
                 disabled={loading}
                 className="w-full py-3 bg-ink text-paper rounded-lg font-medium hover:bg-signal transition-colors disabled:opacity-50 mt-2"
               >
-                {loading ? "Please wait…" : "Continue"}
+                {loading ? t("auth.please_wait") : t("auth.continue")}
               </button>
             </form>
           )}
@@ -137,7 +139,7 @@ function LoginPage() {
               <div className="bg-signal/5 border border-signal/30 rounded-lg p-3">
                 <input
                   className={`${inputClass} font-mono tracking-widest text-center`}
-                  placeholder="Enter 6-digit code"
+                  placeholder={t("auth.enter_6_digit_code")}
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
                   required
@@ -149,7 +151,7 @@ function LoginPage() {
                 disabled={loading}
                 className="w-full py-3 bg-signal text-paper rounded-lg font-medium hover:bg-signal-dark transition-colors disabled:opacity-50"
               >
-                {loading ? "Verifying…" : "Verify & Log in"}
+                {loading ? t("auth.verifying") : t("auth.verify_and_login")}
               </button>
 
               <button
@@ -161,13 +163,13 @@ function LoginPage() {
                 }}
                 className="w-full text-sm text-slate hover:text-ink transition-colors"
               >
-                ← Back
+                {t("auth.back")}
               </button>
             </form>
           )}
 
           <p className="text-center text-sm text-slate mt-6">
-            Don't have an account? <Link to="/signup" className="text-ink font-medium hover:text-signal">Sign up</Link>
+            {t("auth.no_account")} <Link to="/signup" className="text-ink font-medium hover:text-signal">{t("auth.sign_up")}</Link>
           </p>
         </div>
       </div>

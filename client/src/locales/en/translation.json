@@ -1,0 +1,52 @@
+{
+    "nav": {
+        "community_feed": "Community Feed",
+        "dashboard": "Dashboard",
+        "log_out": "Log out",
+        "log_in": "Log in",
+        "sign_up": "Sign up"
+    },
+    "home": {
+        "subtitle": "Civic Grievance Registry",
+        "title": "Report it. Track it.<br />Get it resolved.",
+        "description": "A direct line between citizens and the departments responsible for fixing what's broken in your neighborhood.",
+        "go_to_dashboard": "Go to Dashboard",
+        "create_account": "Create an account",
+        "already_have_one": "I already have one"
+    },
+    "auth": {
+        "login_title": "Log in to Nagrik",
+        "signup_title": "Create an account",
+        "email_label": "Email address",
+        "password_label": "Password",
+        "welcome_back": "Welcome back",
+        "verify_its_you": "Verify it's you",
+        "login_subtitle": "Log in to track and manage your complaints",
+        "otp_subtitle": "Enter the verification code sent to your registered email address",
+        "hide": "Hide",
+        "show": "Show",
+        "forgot_password": "Forgot password?",
+        "continue": "Continue",
+        "please_wait": "Please wait…",
+        "enter_6_digit_code": "Enter 6-digit code",
+        "verifying": "Verifying…",
+        "verify_and_login": "Verify & Log in",
+        "back": "← Back",
+        "no_account": "Don't have an account?",
+        "signup_subtitle": "Smart Citizen Grievance Management System",
+        "citizen_badge": "Citizen",
+        "full_name_label": "Full name",
+        "mobile_number_label": "Mobile number",
+        "district_label": "District",
+        "taluka_label": "Taluka",
+        "city_label": "City",
+        "area_label": "Area",
+        "confirm_password_label": "Confirm password",
+        "send_otp": "Send OTP",
+        "otp_sent": "Sent",
+        "verify_btn": "Verify",
+        "verified_text": "✓ Verified",
+        "create_account_btn": "Create account",
+        "already_have_account": "Already have an account?"
+    }
+}
