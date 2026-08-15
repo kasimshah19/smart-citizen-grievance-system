@@ -23,7 +23,7 @@ function EmployeeSidebar({ open, onClose }) {
       )}
 
       <aside
-        className={`fixed lg:sticky top-0 left-0 h-screen w-64 bg-ink text-paper flex flex-col z-40 transition-transform duration-300 ${
+        className={`fixed lg:sticky top-0 left-0 h-dvh w-64 bg-ink text-paper flex flex-col z-40 transition-transform duration-300 ${
           open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >

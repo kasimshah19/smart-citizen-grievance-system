@@ -6,7 +6,7 @@ function AdminLayout({ children, breadcrumb }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-paper flex">
+    <div className="min-h-dvh bg-paper flex">
       <AdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 min-w-0 flex flex-col">
         <AdminTopNav onMenuClick={() => setSidebarOpen(true)} breadcrumb={breadcrumb} />

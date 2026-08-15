@@ -74,7 +74,7 @@ function PublicFeedPage() {
     "px-3 py-2.5 bg-white border border-line rounded-lg text-sm text-ink focus:outline-none focus:border-ink transition-colors";
 
   return (
-    <div className="min-h-screen bg-paper">
+    <div className="min-h-dvh bg-paper">
       <Helmet htmlAttributes={{ lang: i18n.language }}>
         <title>Community Feed | Nagrik</title>
         <meta name="description" content="View civic issues reported by citizens in your area. An anonymized community feed tracking neighborhood repairs." />

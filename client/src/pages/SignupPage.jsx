@@ -99,7 +99,7 @@ function SignupPage() {
     "w-full px-4 py-3 bg-paper border border-line rounded-lg text-ink placeholder:text-slate/60 focus:outline-none focus:border-ink transition-colors text-sm";
 
   return (
-    <div className="min-h-screen bg-ink flex items-center justify-center px-4 py-12">
+    <div className="min-h-dvh bg-ink flex items-center justify-center px-4 py-12">
       <Helmet htmlAttributes={{ lang: i18n.language }}>
         <title>Create Citizen Account | Nagrik</title>
         <meta name="description" content="Register as a citizen on Nagrik to report, track, and resolve civic governance issues in your neighborhood." />

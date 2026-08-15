@@ -62,7 +62,7 @@ function LoginPage() {
     "w-full px-4 py-3 bg-paper border border-line rounded-lg text-ink placeholder:text-slate/60 focus:outline-none focus:border-ink transition-colors text-sm";
 
   return (
-    <div className="min-h-screen bg-ink flex flex-col items-center justify-center px-4 py-12 gap-8">
+    <div className="min-h-dvh bg-ink flex flex-col items-center justify-center px-4 py-12 gap-8">
       <Helmet htmlAttributes={{ lang: i18n.language }}>
         <title>Citizen Log In | Nagrik</title>
         <meta name="description" content="Log in to your Nagrik citizen account to track your submitted complaints and community points." />

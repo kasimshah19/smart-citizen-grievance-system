@@ -13,7 +13,7 @@ function HomePage() {
 
 
   return (
-    <div className="min-h-screen bg-paper flex flex-col">
+    <div className="min-h-dvh bg-paper flex flex-col">
       <Helmet htmlAttributes={{ lang: i18n.language }}>
         <title>Nagrik | Smart Citizen Grievance Registry</title>
         <meta name="description" content="A direct line between citizens and departments responsible for fixing what's broken in your neighborhood. Report and track civic issues." />

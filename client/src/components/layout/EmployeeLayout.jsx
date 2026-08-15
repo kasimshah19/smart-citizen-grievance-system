@@ -6,7 +6,7 @@ function EmployeeLayout({ children, breadcrumb }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-paper flex">
+    <div className="min-h-dvh bg-paper flex">
       <EmployeeSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 min-w-0 flex flex-col">
         <EmployeeTopNav onMenuClick={() => setSidebarOpen(true)} breadcrumb={breadcrumb} />

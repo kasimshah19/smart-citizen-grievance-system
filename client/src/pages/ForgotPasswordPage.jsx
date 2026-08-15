@@ -77,7 +77,7 @@ function ForgotPasswordPage() {
         : "bg-ink/5 border-line text-ink";
 
   return (
-    <div className="min-h-screen bg-ink flex flex-col items-center justify-center px-4 py-12 gap-8">
+    <div className="min-h-dvh bg-ink flex flex-col items-center justify-center px-4 py-12 gap-8">
       <Link to="/" className="font-display text-2xl text-paper">
         Nagrik<span className="text-signal">.</span>
       </Link>
