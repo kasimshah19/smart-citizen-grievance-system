@@ -18,7 +18,7 @@ const createComplaint = async (req, res) => {
       });
     }
 
-    const photoUrl = req.file ? `/uploads/complaints/${req.file.filename}` : null;
+    const photoUrl = req.file ? req.file.path : null;
 
     let complaintNumber;
     let isUnique = false;
