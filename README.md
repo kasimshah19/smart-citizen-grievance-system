@@ -52,11 +52,14 @@ The system is fully deployed and ready for testing. You can explore the citizen,
 | Category | Features |
 |----------|----------|
 | **Citizen Portal** | File complaints with photo evidence & GPS location, track status in real-time, view complaint history timeline, join existing complaints, rate resolved complaints, manage profile & notification preferences |
-| **Admin Portal** | Comprehensive dashboard with analytics & KPIs, manage complaints (assign, escalate, resolve), department & employee CRUD management, geo-mapped complaint visualization (Leaflet), user management with status toggle, publish announcements, handle support tickets, export data (PDF/Excel) |
+| **Admin Portal** | Comprehensive dashboard with analytics & KPIs, manage complaints (assign, escalate, resolve), department & employee CRUD management, geo-mapped complaint visualization (Leaflet), user management with status toggle, publish announcements, handle support tickets, export reports (PDF/Excel) |
 | **Employee Portal** | View assigned complaints, update complaint status with notes, personal dashboard with workload stats, profile management |
+| **Gamification** | Karma System where citizens earn points for reporting valid civic issues, dynamically showcased on a public "Wall of Fame" Leaderboard widget |
+| **AI Integration** | Smart Priority Detection via Groq API (llama-3-8b) parsing complaint title/description to accurately assign structural priority (Low to Emergency) automatically |
 | **Authentication** | OTP-based registration & login via Email (Brevo API), JWT access tokens with middleware protection, forgot password flow with OTP verification, role-based access control (Citizen / Admin / Employee) |
 | **Real-Time** | Socket.io powered live notification delivery, instant complaint status update push to citizens |
 | **Smart Features** | Duplicate complaint detection, SLA tracking (7-day overdue alerts), emergency mode for critical complaints, community feed for public complaints |
+| **UX/UI** | Enterprise Dark Mode (Tailwind v4 variables), Multi-language Support (i18next with English/Hindi offline persistence) |
 | **PWA** | Installable as a mobile app, service worker for offline support, responsive design for all devices |
 
 ---
@@ -76,6 +79,7 @@ The system is fully deployed and ready for testing. You can explore the citizen,
 | Recharts | 3.10 | Data visualization for analytics dashboards |
 | Leaflet + React Leaflet | 1.9 / 5.0 | Interactive geo-mapped complaint visualization |
 | Lucide React | 1.25 | Modern icon library |
+| i18next | 24.2 | Internationalization (English/Hindi Support) |
 | jsPDF + ExcelJS | 4.2 / 4.4 | PDF & Excel report generation |
 
 ### Backend
@@ -91,6 +95,7 @@ The system is fully deployed and ready for testing. You can explore the citizen,
 | Multer | 2.2 | Multipart file upload handling |
 | Cloudinary | HTTP API | Permanent Image Storage for Complaints |
 | Brevo | HTTP API | Email OTP delivery (Bypasses local SMTP blocks) |
+| Groq SDK | 0.15 | AI LLM Integration for smart priority detection |
 | node-cron | 4.6 | Scheduled task management |
 
 ### Infrastructure
