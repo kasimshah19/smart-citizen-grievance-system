@@ -1,5 +1,6 @@
 const Complaint = require("./complaint.model");
 const ComplaintHistory = require("./complaintHistory.model");
+const Citizen = require("../auth/citizen.model");
 const { COMPLAINT_STATUS } = require("../../shared/constants/complaintStatus");
 
 // Statuses an employee is allowed to set (narrower than the full admin list)
@@ -80,9 +81,17 @@ const updateAssignedComplaintStatus = async (req, res) => {
       return res.status(404).json({ success: false, message: "Complaint not found or not assigned to you" });
     }
 
+    const oldStatus = complaint.status;
     complaint.status = status;
     if (remarks !== undefined) complaint.remarks = remarks;
     await complaint.save();
+
+    // Gamification: Award 10 Karma Points if resolving for the first time
+    if (status === COMPLAINT_STATUS.RESOLVED && oldStatus !== COMPLAINT_STATUS.RESOLVED) {
+      await Citizen.findByIdAndUpdate(complaint.citizen, {
+        $inc: { karmaPoints: 10 }
+      });
+    }
 
     await ComplaintHistory.create({
       complaint: complaint._id,

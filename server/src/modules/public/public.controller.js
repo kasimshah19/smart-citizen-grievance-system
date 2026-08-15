@@ -1,4 +1,6 @@
 const Complaint = require("../complaint/complaint.model");
+const Citizen = require("../auth/citizen.model");
+const ROLES = require("../../shared/constants/roles");
 
 // GET /api/public/complaints — no login required.
 // Deliberately excludes anything identifying: no citizen name, phone, email,
@@ -60,4 +62,19 @@ const getPublicStats = async (req, res) => {
   }
 };
 
-module.exports = { getPublicComplaints, getPublicStats };
+// GET /api/public/leaderboard — get top 5 citizens with highest karma points
+const getLeaderboard = async (req, res) => {
+  try {
+    const topCitizens = await Citizen.find({ role: ROLES.CITIZEN, karmaPoints: { $gt: 0 } })
+      .select("fullName karmaPoints")
+      .sort({ karmaPoints: -1 })
+      .limit(5);
+
+    return res.status(200).json({ success: true, leaderboard: topCitizens });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Something went wrong" });
+  }
+};
+
+module.exports = { getPublicComplaints, getPublicStats, getLeaderboard };

@@ -58,6 +58,10 @@ const citizenSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    karmaPoints: {
+      type: Number,
+      default: 0,
+    },
     role: {
       type: String,
       enum: Object.values(ROLES),

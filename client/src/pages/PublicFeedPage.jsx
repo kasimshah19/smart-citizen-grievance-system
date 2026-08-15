@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, MapPin, Users, ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
+import { Search, MapPin, Users, ChevronLeft, ChevronRight, ShieldCheck, Trophy, Sparkles } from "lucide-react";
 import api from "../services/api";
 import { COMPLAINT_CATEGORIES, STATUS_COLORS } from "../constants/complaint.constants";
 
@@ -9,6 +9,7 @@ function PublicFeedPage() {
   const [stats, setStats] = useState(null);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
+  const [leaderboard, setLeaderboard] = useState([]);
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
@@ -20,6 +21,11 @@ function PublicFeedPage() {
       .get("/api/public/stats")
       .then((res) => setStats(res.data.stats))
       .catch((err) => console.error("Failed to load stats", err));
+
+    api
+      .get("/api/public/leaderboard")
+      .then((res) => setLeaderboard(res.data.leaderboard))
+      .catch((err) => console.error("Failed to load leaderboard", err));
   }, []);
 
   const fetchComplaints = async () => {
@@ -94,14 +100,52 @@ function PublicFeedPage() {
         </div>
 
         {stats && (
-          <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 mb-8 max-w-sm">
-            <div className="bg-white border border-line rounded-2xl p-4">
-              <p className="font-display text-2xl text-ink">{stats.total}</p>
-              <p className="text-xs text-slate mt-1">Total Reported</p>
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-8">
+            {/* Stats Block - 4 cols */}
+            <div className="md:col-span-4 grid grid-cols-2 gap-4">
+              <div className="bg-white border border-line rounded-2xl p-4 flex flex-col justify-center relative overflow-hidden">
+                <p className="font-display text-3xl text-ink relative z-10">{stats.total}</p>
+                <p className="text-xs text-slate mt-1 relative z-10">Total Reported</p>
+                <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-ink/5 rounded-full blur-xl"></div>
+              </div>
+              <div className="bg-white border border-line rounded-2xl p-4 flex flex-col justify-center relative overflow-hidden">
+                <p className="font-display text-3xl text-success relative z-10">{stats.resolved}</p>
+                <p className="text-xs text-slate mt-1 relative z-10">Resolved</p>
+                <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-success/10 rounded-full blur-xl"></div>
+              </div>
             </div>
-            <div className="bg-white border border-line rounded-2xl p-4">
-              <p className="font-display text-2xl text-success">{stats.resolved}</p>
-              <p className="text-xs text-slate mt-1">Resolved</p>
+
+            {/* Leaderboard Block - 8 cols */}
+            <div className="md:col-span-8 bg-gradient-to-br from-ink to-[#1a2b3b] border border-ink rounded-2xl p-4 md:px-6 md:py-5 flex flex-col md:flex-row items-start md:items-center justify-between shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-signal/20 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
+              <div className="mb-4 md:mb-0 relative z-10">
+                <div className="flex items-center gap-2 mb-1">
+                  <Trophy size={16} className="text-[#FFC107] fill-[#FFC107]" />
+                  <h2 className="font-display text-sm tracking-wide text-paper uppercase">Wall of Fame</h2>
+                </div>
+                <p className="text-xs text-paper/70 max-w-[180px]">Citizens earning Karma points for resolving civic issues.</p>
+              </div>
+
+              <div className="flex gap-4 md:gap-5 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 relative z-10 scrollbar-hide shrink-0">
+                {leaderboard.length === 0 ? (
+                  <p className="text-xs text-paper/50 italic py-2">No Karma awarded yet.</p>
+                ) : (
+                  leaderboard.map((lb, idx) => (
+                    <div key={lb._id} className="flex flex-col items-center min-w-[56px]">
+                      <div className="relative">
+                        <div className={`w-11 h-11 rounded-full flex flex-col items-center justify-center text-ink font-mono text-xs font-bold border-2 ${idx === 0 ? 'bg-[#FFD700] border-[#FFC107] shadow-[0_0_15px_rgba(255,193,7,0.4)]' : idx === 1 ? 'bg-[#E0E0E0] border-[#BDBDBD]' : idx === 2 ? 'bg-[#CD7F32] border-[#A0522D] text-white' : 'bg-paper border-line text-ink'}`}>
+                          {lb.fullName.substring(0, 2).toUpperCase()}
+                        </div>
+                        {idx === 0 && <Sparkles size={12} className="absolute -top-1 -right-1 text-white fill-white drop-shadow-md" />}
+                      </div>
+                      <p className="text-[10px] text-paper font-medium mt-1.5 truncate max-w-[60px] text-center" title={lb.fullName}>
+                        {lb.fullName.split(' ')[0]}
+                      </p>
+                      <p className="text-[10px] text-signal font-bold mt-0.5">{lb.karmaPoints} PTS</p>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         )}
