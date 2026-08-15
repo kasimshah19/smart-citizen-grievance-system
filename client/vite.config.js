@@ -29,6 +29,9 @@ export default defineConfig({
             type: 'image/svg+xml'
           }
         ]
+      },
+      workbox: {
+        maximumFileSizeToCacheInBytes: 5000000 // 5MB
       }
     })
   ],
