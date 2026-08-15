@@ -15,11 +15,16 @@
 
 > **A full-stack civic grievance management platform** that bridges the gap between citizens and government departments. Citizens can report infrastructure issues, track complaint progress in real-time, and rate resolutions — while admins and employees manage, assign, and resolve complaints through dedicated dashboards.
 
-<p align="center">
-  <strong>🌐 Live Demo:</strong> <a href="https://smart-citizen-grievance-system.vercel.app">smart-citizen-grievance-system.vercel.app</a>
-  &nbsp;|&nbsp;
-  <strong>⚙️ API:</strong> <a href="https://smart-citizen-grievance-system.onrender.com">smart-citizen-grievance-system.onrender.com</a>
-</p>
+## 🌐 Live Deployments
+
+The system is fully deployed and ready for testing. You can explore the citizen, admin, and employee portals using the live application link below.
+
+| Component | Status | Environment | Access Link |
+|-----------|--------|-------------|-------------|
+| **Frontend UI (App)** | 🟢 Online | Vercel | [smart-citizen-grievance-system.vercel.app](https://smart-citizen-grievance-system.vercel.app) |
+| **Backend (API)** | 🟢 Online | Render | [smart-citizen-grievance-system.onrender.com](https://smart-citizen-grievance-system.onrender.com) |
+
+> **Note:** The backend API is hosted on Render's free tier, which sleeps after 15 minutes of inactivity. **The first request might take 30-50 seconds** to wake up the server. Subsequent requests will be fast.
 
 ---
 
