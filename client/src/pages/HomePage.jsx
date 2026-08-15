@@ -14,9 +14,21 @@ function HomePage() {
 
   return (
     <div className="min-h-screen bg-paper flex flex-col">
-      <Helmet>
+      <Helmet htmlAttributes={{ lang: i18n.language }}>
         <title>Nagrik | Smart Citizen Grievance Registry</title>
         <meta name="description" content="A direct line between citizens and departments responsible for fixing what's broken in your neighborhood. Report and track civic issues." />
+        <link rel="canonical" href="https://nagrik.vercel.app/" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "Nagrik",
+            "applicationCategory": "GovernmentApplication",
+            "operatingSystem": "Web",
+            "description": "A platform for citizens to report, track, and resolve local civic governance issues.",
+            "url": "https://nagrik.vercel.app/"
+          })}
+        </script>
       </Helmet>
 
       <header className="border-b border-line px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">

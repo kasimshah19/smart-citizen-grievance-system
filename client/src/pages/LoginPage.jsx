@@ -63,9 +63,10 @@ function LoginPage() {
 
   return (
     <div className="min-h-screen bg-ink flex flex-col items-center justify-center px-4 py-12 gap-8">
-      <Helmet>
+      <Helmet htmlAttributes={{ lang: i18n.language }}>
         <title>Citizen Log In | Nagrik</title>
         <meta name="description" content="Log in to your Nagrik citizen account to track your submitted complaints and community points." />
+        <link rel="canonical" href="https://nagrik.vercel.app/login" />
       </Helmet>
 
       <Link to="/" className="font-display text-2xl text-paper">

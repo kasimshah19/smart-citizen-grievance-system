@@ -100,9 +100,10 @@ function SignupPage() {
 
   return (
     <div className="min-h-screen bg-ink flex items-center justify-center px-4 py-12">
-      <Helmet>
+      <Helmet htmlAttributes={{ lang: i18n.language }}>
         <title>Create Citizen Account | Nagrik</title>
         <meta name="description" content="Register as a citizen on Nagrik to report, track, and resolve civic governance issues in your neighborhood." />
+        <link rel="canonical" href="https://nagrik.vercel.app/signup" />
       </Helmet>
 
       <div className="w-full max-w-md">

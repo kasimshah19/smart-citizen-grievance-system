@@ -75,9 +75,10 @@ function PublicFeedPage() {
 
   return (
     <div className="min-h-screen bg-paper">
-      <Helmet>
+      <Helmet htmlAttributes={{ lang: i18n.language }}>
         <title>Community Feed | Nagrik</title>
         <meta name="description" content="View civic issues reported by citizens in your area. An anonymized community feed tracking neighborhood repairs." />
+        <link rel="canonical" href="https://nagrik.vercel.app/community" />
       </Helmet>
 
       {/* Public header — same style as the landing page */}
