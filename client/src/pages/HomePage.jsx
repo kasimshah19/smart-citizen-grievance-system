@@ -13,13 +13,13 @@ function HomePage() {
 
   return (
     <div className="min-h-screen bg-paper flex flex-col">
-      <header className="border-b border-line px-6 py-5 flex items-center justify-between">
+      <header className="border-b border-line px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
         <span className="font-display text-lg tracking-tight text-ink">
           Nagrik<span className="text-signal">.</span>
         </span>
-        <nav className="flex gap-3 text-sm items-center">
+        <nav className="flex flex-wrap justify-center gap-2 sm:gap-3 text-sm items-center">
           {/* Language Switcher */}
-          <div className="flex bg-ink/5 rounded-full p-1 mr-2">
+          <div className="flex bg-ink/5 rounded-full p-1 sm:mr-2">
             <button
               onClick={() => changeLanguage('en')}
               className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${i18n.language.startsWith('en') ? 'bg-white shadow-sm text-ink' : 'text-slate hover:text-ink'}`}
