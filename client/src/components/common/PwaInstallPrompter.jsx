@@ -8,10 +8,8 @@ export default function PwaInstallPrompter() {
     const { t } = useTranslation();
 
     useEffect(() => {
-        // Fast fail if dismissed or already running as PWA
-        if (localStorage.getItem("pwa-prompt-dismissed")) {
-            return;
-        }
+        // Always show the prompt if they are not running as a standalone PWA
+        // Removed localStorage check to ensure it aggressively shows on every refresh
         if (window.matchMedia("(display-mode: standalone)").matches) {
             return;
         }
@@ -20,8 +18,8 @@ export default function PwaInstallPrompter() {
             // Prevent the mini-infobar from appearing on mobile
             e.preventDefault();
             setDeferredPrompt(e);
-            // Slight delay so the user isn't instantly blasted before the page renders
-            setTimeout(() => setShowPrompt(true), 1500);
+            // Tiny delay so the user isn't instantly blasted before DOM initially paints
+            setTimeout(() => setShowPrompt(true), 300);
         };
 
         window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
@@ -45,7 +43,7 @@ export default function PwaInstallPrompter() {
 
     const handleDismiss = () => {
         setShowPrompt(false);
-        localStorage.setItem("pwa-prompt-dismissed", "true");
+        // localStorage save removed as per request so it appears next reload
     };
 
     if (!showPrompt) return null;
