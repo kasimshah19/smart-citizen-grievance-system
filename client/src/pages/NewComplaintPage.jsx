@@ -384,7 +384,7 @@ function NewComplaintPage() {
             <p className="text-xs text-slate mb-2">
               You can type your address directly, or use GPS as a starting point and edit it for accuracy.
             </p>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 className={inputClass}
                 name="address"
@@ -397,7 +397,7 @@ function NewComplaintPage() {
                 type="button"
                 onClick={handleUseCurrentLocation}
                 disabled={locating}
-                className="shrink-0 px-4 py-3 border border-line rounded-lg text-sm text-ink hover:border-ink transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                className="shrink-0 w-full sm:w-auto px-4 py-3 border border-line rounded-lg text-sm text-ink hover:border-ink transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
               >
                 <MapPin size={15} />
                 {locating ? "Detecting…" : "Use GPS"}

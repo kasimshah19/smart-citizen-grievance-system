@@ -67,11 +67,11 @@ function HomePage() {
           <span className="inline-block font-mono text-xs uppercase tracking-widest text-slate border border-line rounded-full px-3 py-1 mb-6">
             {t("home.subtitle")}
           </span>
-          <h1 className="font-display text-5xl md:text-6xl text-ink leading-tight mb-6" dangerouslySetInnerHTML={{ __html: t("home.title") }}></h1>
+          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink leading-tight mb-6" dangerouslySetInnerHTML={{ __html: t("home.title") }}></h1>
           <p className="text-slate text-lg mb-10 max-w-lg mx-auto">
             {t("home.description")}
           </p>
-          <div className="flex gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {citizen ? (
               <Link to="/dashboard" className="px-6 py-3 bg-signal text-paper rounded-full font-medium hover:bg-signal-dark transition-colors">
                 {t("home.go_to_dashboard")}

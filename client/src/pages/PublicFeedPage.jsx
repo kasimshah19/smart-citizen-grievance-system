@@ -162,13 +162,13 @@ function PublicFeedPage() {
               className="w-full pl-9 pr-3 py-2.5 bg-white border border-line rounded-lg text-sm text-ink placeholder:text-slate/60 focus:outline-none focus:border-ink transition-colors"
             />
           </div>
-          <select className={selectClass} value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }}>
+          <select className={`${selectClass} w-full md:w-auto`} value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }}>
             <option value="">All Categories</option>
             {COMPLAINT_CATEGORIES.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
-          <select className={selectClass} value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
+          <select className={`${selectClass} w-full md:w-auto`} value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
             <option value="">All Statuses</option>
             {Object.keys(STATUS_COLORS).map((s) => (
               <option key={s} value={s}>{s}</option>
