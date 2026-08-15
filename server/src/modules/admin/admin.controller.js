@@ -3,6 +3,9 @@ const ComplaintHistory = require("../complaint/complaintHistory.model");
 const Citizen = require("../auth/citizen.model");
 const SupportTicket = require("../support/supportTicket.model");
 const Department = require("../department/department.model");
+const PDFDocument = require("pdfkit");
+const ExcelJS = require("exceljs");
+const moment = require("moment");
 const { COMPLAINT_STATUS } = require("../../shared/constants/complaintStatus");
 const ROLES = require("../../shared/constants/roles");
 const { isComplaintOverdue } = require("../../shared/utils/sla");
@@ -330,6 +333,119 @@ const getComplaintsForMap = async (req, res) => {
   }
 };
 
+// --- NEW EXPORT FUNCTIONS ---
+const exportComplaintsExcel = async (req, res) => {
+  try {
+    const thirtyDaysAgo = moment().subtract(30, "days").toDate();
+    const complaints = await Complaint.find({ createdAt: { $gte: thirtyDaysAgo } })
+      .populate("citizen", "fullName")
+      .sort({ createdAt: -1 });
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Last 30 Days");
+
+    worksheet.columns = [
+      { header: "ID", key: "complaintNumber", width: 15 },
+      { header: "Citizen Name", key: "citizen", width: 25 },
+      { header: "Title", key: "title", width: 40 },
+      { header: "Category", key: "category", width: 20 },
+      { header: "Priority", key: "priority", width: 15 },
+      { header: "Date", key: "createdAt", width: 15 },
+      { header: "Status", key: "status", width: 15 },
+    ];
+
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF3F4F6" } };
+
+    complaints.forEach((c) => {
+      worksheet.addRow({
+        complaintNumber: c.complaintNumber,
+        citizen: c.citizen?.fullName || "Unregistered",
+        title: c.title,
+        category: c.category,
+        priority: c.priority,
+        createdAt: moment(c.createdAt).format("YYYY-MM-DD"),
+        status: c.status,
+      });
+    });
+
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", 'attachment; filename="complaints-report.xlsx"');
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Excel Export Error", error);
+    res.status(500).json({ success: false, message: "Excel export failed" });
+  }
+};
+
+const exportComplaintsPDF = async (req, res) => {
+  try {
+    const thirtyDaysAgo = moment().subtract(30, "days").toDate();
+    const complaints = await Complaint.find({ createdAt: { $gte: thirtyDaysAgo } })
+      .populate("citizen", "fullName")
+      .sort({ createdAt: -1 });
+
+    const doc = new PDFDocument({ margin: 30, size: "A4" });
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", 'attachment; filename="complaints-report.pdf"');
+
+    doc.pipe(res);
+
+    // Title
+    doc.fontSize(18).text("Smart Citizen Grievance System", { align: "center" });
+    doc.fontSize(12).text(`Generated: ${moment().format("YYYY-MM-DD HH:mm:ss")}`, { align: "center", color: "grey" });
+    doc.moveDown(2);
+
+    doc.fontSize(14).fillColor("black").text("Analytics Report: Complaints in Last 30 Days");
+    doc.moveDown(1);
+
+    const tableTop = doc.y;
+    const col1 = 30;  // ID
+    const col2 = 120; // Citizen
+    const col3 = 240; // Title
+    const col4 = 420; // Status
+    const col5 = 490; // Date
+
+    doc.fontSize(10).font("Helvetica-Bold");
+    doc.text("Req ID", col1, tableTop);
+    doc.text("Citizen", col2, tableTop);
+    doc.text("Complaint Title", col3, tableTop);
+    doc.text("Status", col4, tableTop);
+    doc.text("Date", col5, tableTop);
+
+    doc.moveTo(30, doc.y + 5).lineTo(565, doc.y + 5).stroke();
+
+    let y = doc.y + 15;
+    doc.font("Helvetica");
+
+    complaints.forEach((c) => {
+      if (y > 750) {
+        doc.addPage();
+        y = 30;
+      }
+
+      const title = c.title.length > 25 ? c.title.substring(0, 25) + "..." : c.title;
+
+      doc.fontSize(9);
+      doc.text(c.complaintNumber, col1, y);
+      doc.text(c.citizen?.fullName || "Unregistered", col2, y);
+      doc.text(title, col3, y);
+      doc.text(c.status, col4, y);
+      doc.text(moment(c.createdAt).format("YYYY-MM-DD"), col5, y);
+
+      y += 20;
+    });
+
+    doc.end();
+  } catch (error) {
+    console.error("PDF Export Error", error);
+    if (!res.headersSent) res.status(500).json({ success: false, message: "PDF export failed" });
+  }
+};
+
 module.exports = {
   getDashboardSummary,
   getRecentComplaints,
@@ -340,4 +456,6 @@ module.exports = {
   getAnalytics,
   adminSearch,
   getComplaintsForMap,
+  exportComplaintsExcel,
+  exportComplaintsPDF,
 };

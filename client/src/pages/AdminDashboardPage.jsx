@@ -28,6 +28,8 @@ import {
   Megaphone,
   ArrowRight,
   AlertTriangle,
+  Download,
+  FileSpreadsheet,
 } from "lucide-react";
 import AdminLayout from "../components/layout/AdminLayout";
 import api from "../services/api";
@@ -71,6 +73,36 @@ function AdminDashboardPage() {
     };
     fetchAll();
   }, []);
+
+  const handleExportPDF = async () => {
+    try {
+      const response = await api.get("/api/admin/dashboard/export-pdf", { responseType: "blob" });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `complaints-report-${new Date().getTime()}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("Export PDF failed", error);
+    }
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      const response = await api.get("/api/admin/dashboard/export-excel", { responseType: "blob" });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `complaints-report-${new Date().getTime()}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("Export Excel failed", error);
+    }
+  };
 
   const kpiCards = [
     { label: "Total Complaints", value: kpis?.total ?? 0, icon: ClipboardList },
@@ -132,14 +164,12 @@ function AdminDashboardPage() {
 
             {/* Overdue card, styled distinctly since it needs attention */}
             <div
-              className={`bg-white border rounded-2xl p-4 ${
-                overdueCount > 0 ? "border-error/40 bg-error/5" : "border-line"
-              }`}
+              className={`bg-white border rounded-2xl p-4 ${overdueCount > 0 ? "border-error/40 bg-error/5" : "border-line"
+                }`}
             >
               <div
-                className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${
-                  overdueCount > 0 ? "bg-error/15" : "bg-ink/5"
-                }`}
+                className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${overdueCount > 0 ? "bg-error/15" : "bg-ink/5"
+                  }`}
               >
                 <AlertTriangle size={16} className={overdueCount > 0 ? "text-error" : "text-ink"} />
               </div>
@@ -156,12 +186,26 @@ function AdminDashboardPage() {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-display text-lg text-ink">Analytics</h2>
-            <Link
-              to="/admin/analytics"
-              className="text-xs text-signal hover:text-signal-dark flex items-center gap-1"
-            >
-              Full analytics <ArrowRight size={12} />
-            </Link>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleExportPDF}
+                className="text-xs flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line hover:bg-ink/5 text-ink transition-colors"
+              >
+                <Download size={12} /> PDF
+              </button>
+              <button
+                onClick={handleExportExcel}
+                className="text-xs flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line hover:bg-ink/5 text-ink transition-colors mr-2"
+              >
+                <FileSpreadsheet size={12} /> Excel
+              </button>
+              <Link
+                to="/admin/analytics"
+                className="text-xs text-signal hover:text-signal-dark flex items-center gap-1"
+              >
+                Full analytics <ArrowRight size={12} />
+              </Link>
+            </div>
           </div>
           <div className="grid lg:grid-cols-2 gap-4">
             <div className="bg-white border border-line rounded-2xl p-5">
