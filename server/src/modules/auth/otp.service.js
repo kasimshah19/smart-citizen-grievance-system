@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const Otp = require("./otp.model");
-const { sendSMS } = require("./sms.service");
+const { sendEmail } = require("../../shared/services/email.service");
 
 const OTP_EXPIRY_MINUTES = 5;
 const RESEND_COOLDOWN_SECONDS = 30;
@@ -11,8 +11,8 @@ const generateOtpCode = () => {
   return crypto.randomInt(100000, 999999).toString();
 };
 
-const createAndSendOtp = async (phone, purpose) => {
-  const existingOtp = await Otp.findOne({ phone, purpose, verified: false }).sort({ createdAt: -1 });
+const createAndSendOtp = async (email, purpose) => {
+  const existingOtp = await Otp.findOne({ email, purpose, verified: false }).sort({ createdAt: -1 });
 
   if (existingOtp) {
     const secondsSinceLastSent = (Date.now() - existingOtp.lastSentAt) / 1000;
@@ -26,23 +26,24 @@ const createAndSendOtp = async (phone, purpose) => {
   const otpHash = await bcrypt.hash(otpCode, 10);
   const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
-  await Otp.deleteMany({ phone, purpose, verified: false });
+  await Otp.deleteMany({ email, purpose, verified: false });
 
   await Otp.create({
-    phone,
+    email,
     otpHash,
     purpose,
     expiresAt,
     lastSentAt: new Date(),
   });
 
-  await sendSMS(phone, `Your Smart Citizen Grievance System verification code is: ${otpCode}. It will expire in ${OTP_EXPIRY_MINUTES} minutes.`);
+  const message = `Your Smart Citizen Grievance System verification code is: <strong>${otpCode}</strong>.<br/><br/>It will expire in ${OTP_EXPIRY_MINUTES} minutes.`;
+  await sendEmail(email, "Your Verification OTP code", message);
 
-  return { success: true, message: "OTP sent successfully" };
+  return { success: true, message: "OTP sent successfully to your email" };
 };
 
-const verifyOtp = async (phone, purpose, enteredOtp) => {
-  const otpRecord = await Otp.findOne({ phone, purpose, verified: false }).sort({ createdAt: -1 });
+const verifyOtp = async (email, purpose, enteredOtp) => {
+  const otpRecord = await Otp.findOne({ email, purpose, verified: false }).sort({ createdAt: -1 });
 
   if (!otpRecord) {
     throw new Error("No OTP found. Please request a new OTP.");

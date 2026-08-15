@@ -8,18 +8,19 @@ const { generateAccessToken } = require("./token.service");
 // STEP 1: Send OTP for registration (before account is created)
 const sendRegistrationOtp = async (req, res) => {
   try {
-    const { phone } = req.body;
+    const { email } = req.body;
 
-    if (!phone || !/^[0-9]{10}$/.test(phone)) {
-      return res.status(400).json({ success: false, message: "A valid 10-digit phone number is required" });
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ success: false, message: "A valid email address is required" });
     }
 
-    const existingCitizen = await Citizen.findOne({ phone });
+    const lowerEmail = email.trim().toLowerCase();
+    const existingCitizen = await Citizen.findOne({ email: lowerEmail });
     if (existingCitizen) {
-      return res.status(400).json({ success: false, message: "This phone number is already registered" });
+      return res.status(400).json({ success: false, message: "This email is already registered" });
     }
 
-    const result = await createAndSendOtp(phone, "registration");
+    const result = await createAndSendOtp(lowerEmail, "registration");
     return res.status(200).json(result);
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
@@ -29,20 +30,20 @@ const sendRegistrationOtp = async (req, res) => {
 // STEP 2: Verify OTP for registration
 const verifyRegistrationOtp = async (req, res) => {
   try {
-    const { phone, otp } = req.body;
+    const { email, otp } = req.body;
 
-    if (!phone || !otp) {
-      return res.status(400).json({ success: false, message: "Phone and OTP are required" });
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: "Email and OTP are required" });
     }
 
-    const result = await verifyOtp(phone, "registration", otp);
+    const result = await verifyOtp(email.trim().toLowerCase(), "registration", otp);
     return res.status(200).json(result);
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
   }
 };
 
-// STEP 3: Complete registration (only after phone is verified)
+// STEP 3: Complete registration (only after email is verified)
 const register = async (req, res) => {
   try {
     const { isValid, errors } = validateRegistration(req.body);
@@ -51,9 +52,10 @@ const register = async (req, res) => {
     }
 
     const { fullName, email, phone, district, taluka, city, area, password } = req.body;
+    const lowerEmail = email.trim().toLowerCase();
 
     const verifiedOtp = await Otp.findOne({
-      phone,
+      email: lowerEmail,
       purpose: "registration",
       verified: true,
     }).sort({ createdAt: -1 });
@@ -61,11 +63,11 @@ const register = async (req, res) => {
     if (!verifiedOtp) {
       return res.status(400).json({
         success: false,
-        message: "Phone number is not verified. Please verify your phone number first.",
+        message: "Email is not verified. Please verify your email first.",
       });
     }
 
-    const existingEmail = await Citizen.findOne({ email });
+    const existingEmail = await Citizen.findOne({ email: lowerEmail });
     if (existingEmail) {
       return res.status(400).json({ success: false, message: "This email is already registered" });
     }
@@ -79,18 +81,18 @@ const register = async (req, res) => {
 
     const citizen = await Citizen.create({
       fullName,
-      email,
+      email: lowerEmail,
       phone,
       district,
       taluka,
       city,
       area,
       passwordHash,
-      phoneVerified: true,
+      emailVerified: true,
       role: "Citizen",
     });
 
-    await Otp.deleteMany({ phone, purpose: "registration" });
+    await Otp.deleteMany({ email: lowerEmail, purpose: "registration" });
 
     return res.status(201).json({
       success: true,
@@ -116,7 +118,8 @@ const loginSendOtp = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email and password are required" });
     }
 
-    const citizen = await Citizen.findOne({ email });
+    const lowerEmail = email.trim().toLowerCase();
+    const citizen = await Citizen.findOne({ email: lowerEmail });
 
     if (!citizen) {
       return res.status(401).json({ success: false, message: "Invalid email or password" });
@@ -134,12 +137,12 @@ const loginSendOtp = async (req, res) => {
       });
     }
 
-    const result = await createAndSendOtp(citizen.phone, "login");
+    const result = await createAndSendOtp(citizen.email, "login");
 
     return res.status(200).json({
       success: true,
       message: result.message,
-      phone: citizen.phone,
+      email: citizen.email,
     });
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
@@ -155,16 +158,17 @@ const loginVerifyOtp = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email and OTP are required" });
     }
 
-    const citizen = await Citizen.findOne({ email });
+    const lowerEmail = email.trim().toLowerCase();
+    const citizen = await Citizen.findOne({ email: lowerEmail });
     if (!citizen) {
       return res.status(401).json({ success: false, message: "Invalid request" });
     }
 
-    await verifyOtp(citizen.phone, "login", otp);
+    await verifyOtp(citizen.email, "login", otp.trim());
 
     const token = generateAccessToken(citizen._id);
 
-    await Otp.deleteMany({ phone: citizen.phone, purpose: "login" });
+    await Otp.deleteMany({ email: citizen.email, purpose: "login" });
 
     return res.status(200).json({
       success: true,
@@ -282,7 +286,7 @@ const updateNotificationPreferences = async (req, res) => {
   }
 };
 
-// FORGOT PASSWORD — STEP 1: Look up the account by email, send OTP to its registered phone
+// FORGOT PASSWORD — STEP 1: Look up the account by email, send OTP to its registered email
 const forgotPasswordSendOtp = async (req, res) => {
   try {
     const { email } = req.body;
@@ -291,17 +295,20 @@ const forgotPasswordSendOtp = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email is required" });
     }
 
-    const citizen = await Citizen.findOne({ email: email.trim().toLowerCase() });
+    const lowerEmail = email.trim().toLowerCase();
+    const citizen = await Citizen.findOne({ email: lowerEmail });
     if (!citizen) {
       return res.status(404).json({ success: false, message: "No account found with this email" });
     }
 
-    const result = await createAndSendOtp(citizen.phone, "forgot-password");
+    const result = await createAndSendOtp(citizen.email, "forgot-password");
 
-    // Mask the phone number so the UI can show "OTP sent to XXXXXX1234" without exposing the full number
-    const maskedPhone = citizen.phone.slice(-4).padStart(citizen.phone.length, "X");
+    const [user, domain] = citizen.email.split("@");
+    const maskedEmail = user.length > 2
+      ? `${user.charAt(0)}****${user.charAt(user.length - 1)}@${domain}`
+      : `*@${domain}`;
 
-    return res.status(200).json({ success: true, message: result.message, maskedPhone });
+    return res.status(200).json({ success: true, message: result.message, maskedPhone: maskedEmail });
   } catch (error) {
     console.error(error);
     return res.status(400).json({ success: false, message: error.message || "Something went wrong" });
@@ -329,19 +336,18 @@ const resetPassword = async (req, res) => {
       return res.status(400).json({ success: false, message: "Passwords do not match" });
     }
 
-    const citizen = await Citizen.findOne({ email: email.trim().toLowerCase() });
+    const lowerEmail = email.trim().toLowerCase();
+    const citizen = await Citizen.findOne({ email: lowerEmail });
     if (!citizen) {
       return res.status(404).json({ success: false, message: "No account found with this email" });
     }
 
-    // Throws if the OTP is missing, expired, wrong, or over the attempt limit
-    await verifyOtp(citizen.phone, "forgot-password", otp.trim());
+    await verifyOtp(citizen.email, "forgot-password", otp.trim());
 
     citizen.passwordHash = await hashPassword(newPassword);
     await citizen.save();
 
-    // Clean up so the used OTP can't be replayed
-    await Otp.deleteMany({ phone: citizen.phone, purpose: "forgot-password" });
+    await Otp.deleteMany({ email: citizen.email, purpose: "forgot-password" });
 
     return res.status(200).json({ success: true, message: "Password reset successfully. You can now log in." });
   } catch (error) {

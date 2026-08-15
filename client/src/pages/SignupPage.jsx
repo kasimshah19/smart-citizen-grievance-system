@@ -19,7 +19,7 @@ function SignupPage() {
 
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState("form"); // form -> otp -> done
-  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -32,13 +32,13 @@ function SignupPage() {
   const handleSendOtp = async () => {
     setMessage("");
     setErrors({});
-    if (!/^[0-9]{10}$/.test(formData.phone)) {
-      setErrors({ phone: "Enter a valid 10-digit phone number" });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      setErrors({ email: "Enter a valid email address" });
       return;
     }
     setLoading(true);
     try {
-      const res = await api.post("/api/auth/send-otp", { phone: formData.phone });
+      const res = await api.post("/api/auth/send-otp", { email: formData.email });
       setMessage(res.data.message);
       setStep("otp");
     } catch (err) {
@@ -53,11 +53,11 @@ function SignupPage() {
     setLoading(true);
     try {
       const res = await api.post("/api/auth/verify-otp", {
-        phone: formData.phone,
+        email: formData.email,
         otp,
       });
       setMessage(res.data.message);
-      setPhoneVerified(true);
+      setEmailVerified(true);
     } catch (err) {
       setMessage(err.response?.data?.message || "OTP verification failed");
     } finally {
@@ -70,8 +70,8 @@ function SignupPage() {
     setMessage("");
     setErrors({});
 
-    if (!phoneVerified) {
-      setMessage("Please verify your phone number first");
+    if (!emailVerified) {
+      setMessage("Please verify your email address first");
       return;
     }
 
@@ -133,21 +133,17 @@ function SignupPage() {
               </div>
 
               <div>
-                <input className={inputClass} name="email" type="email" placeholder="Email address" value={formData.email} onChange={handleChange} />
-                {errors.email && <p className="text-error text-xs mt-1">{errors.email}</p>}
-              </div>
-
-              <div>
                 <div className="flex gap-2">
                   <input
                     className={inputClass}
-                    name="phone"
-                    placeholder="Mobile number"
-                    value={formData.phone}
+                    name="email"
+                    type="email"
+                    placeholder="Email address"
+                    value={formData.email}
                     onChange={handleChange}
-                    disabled={phoneVerified}
+                    disabled={emailVerified}
                   />
-                  {!phoneVerified && (
+                  {!emailVerified && (
                     <button
                       type="button"
                       onClick={handleSendOtp}
@@ -157,16 +153,16 @@ function SignupPage() {
                       {step === "otp" ? "Sent" : "Send OTP"}
                     </button>
                   )}
-                  {phoneVerified && (
+                  {emailVerified && (
                     <span className="shrink-0 flex items-center gap-1 px-3 py-3 text-success text-sm font-medium -rotate-3">
                       ✓ Verified
                     </span>
                   )}
                 </div>
-                {errors.phone && <p className="text-error text-xs mt-1">{errors.phone}</p>}
+                {errors.email && <p className="text-error text-xs mt-1">{errors.email}</p>}
               </div>
 
-              {step === "otp" && !phoneVerified && (
+              {step === "otp" && !emailVerified && (
                 <div className="flex gap-2 bg-signal/5 border border-signal/30 rounded-lg p-3">
                   <input
                     className={`${inputClass} font-mono tracking-widest`}
@@ -184,6 +180,17 @@ function SignupPage() {
                   </button>
                 </div>
               )}
+
+              <div>
+                <input
+                  className={inputClass}
+                  name="phone"
+                  placeholder="Mobile number"
+                  value={formData.phone}
+                  onChange={handleChange}
+                />
+                {errors.phone && <p className="text-error text-xs mt-1">{errors.phone}</p>}
+              </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -239,7 +246,7 @@ function SignupPage() {
 
               <button
                 type="submit"
-                disabled={!phoneVerified || loading}
+                disabled={!emailVerified || loading}
                 className="w-full py-3 bg-ink text-paper rounded-lg font-medium hover:bg-signal transition-colors disabled:opacity-40 disabled:cursor-not-allowed mt-2"
               >
                 {loading ? "Please wait…" : "Create account"}

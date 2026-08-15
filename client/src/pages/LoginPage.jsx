@@ -78,7 +78,7 @@ function LoginPage() {
           <p className="text-slate text-sm mb-8">
             {step === "credentials"
               ? "Log in to track and manage your complaints"
-              : "Enter the verification code sent to your registered mobile number"}
+              : "Enter the verification code sent to your registered email address"}
           </p>
 
           {message && (

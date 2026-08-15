@@ -9,21 +9,21 @@ function ForgotPasswordPage() {
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [maskedPhone, setMaskedPhone] = useState("");
+  const [maskedEmail, setMaskedEmail] = useState("");
   const [step, setStep] = useState("email"); // email -> reset -> done
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // STEP 1: Look up the account by email, trigger OTP to its registered phone
+  // STEP 1: Look up the account by email, trigger OTP to its registered email
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
     setLoading(true);
     try {
       const res = await api.post("/api/auth/forgot-password/send-otp", { email });
-      setMaskedPhone(res.data.maskedPhone);
+      setMaskedEmail(res.data.maskedPhone);
       setMessage(res.data.message);
       setMessageType("info");
       setStep("reset");
@@ -73,8 +73,8 @@ function ForgotPasswordPage() {
     messageType === "error"
       ? "bg-error/5 border-error/30 text-error"
       : messageType === "success"
-      ? "bg-success/5 border-success/30 text-success"
-      : "bg-ink/5 border-line text-ink";
+        ? "bg-success/5 border-success/30 text-success"
+        : "bg-ink/5 border-line text-ink";
 
   return (
     <div className="min-h-screen bg-ink flex flex-col items-center justify-center px-4 py-12 gap-8">
@@ -96,8 +96,8 @@ function ForgotPasswordPage() {
             {step === "done" && "Password reset"}
           </h1>
           <p className="text-slate text-sm mb-8">
-            {step === "email" && "Enter your account email and we'll send a verification code to your registered mobile number."}
-            {step === "reset" && `Enter the code sent to your phone ending in ${maskedPhone?.slice(-4)}, along with your new password.`}
+            {step === "email" && "Enter your account email and we'll send a verification code to your email address."}
+            {step === "reset" && `Enter the code sent to ${maskedEmail}, along with your new password.`}
             {step === "done" && "Redirecting you to login…"}
           </p>
 
