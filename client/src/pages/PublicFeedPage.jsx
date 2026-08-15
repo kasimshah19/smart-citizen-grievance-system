@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Search, MapPin, Users, ChevronLeft, ChevronRight, ShieldCheck, Trophy, Sparkles } from "lucide-react";
 import api from "../services/api";
 import { COMPLAINT_CATEGORIES, STATUS_COLORS } from "../constants/complaint.constants";
+import { connectSocket } from "../services/socket";
 import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { Helmet } from "react-helmet-async";
@@ -58,6 +59,12 @@ function PublicFeedPage() {
 
   useEffect(() => {
     fetchComplaints();
+
+    const socket = connectSocket();
+    if (socket) {
+      socket.on("feed:update", () => fetchComplaints());
+      return () => socket.off("feed:update");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, category, status]);
 

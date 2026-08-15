@@ -2,7 +2,7 @@ const Complaint = require("./complaint.model");
 const ComplaintHistory = require("./complaintHistory.model");
 const Notification = require("../notification/notification.model");
 const { COMPLAINT_STATUS_LIST } = require("../../shared/constants/complaintStatus");
-const { notifyCitizen } = require("../../socket");
+const { notifyCitizen, broadcastGlobal } = require("../../socket");
 const { isComplaintOverdue } = require("../../shared/utils/sla");
 const { sendEmail } = require("../../shared/services/email.service");
 const Citizen = require("../auth/citizen.model");
@@ -115,6 +115,7 @@ const assignComplaint = async (req, res) => {
       department: complaint.department,
     });
     notifyCitizen(complaint.citizen, "notification:new");
+    broadcastGlobal("feed:update");
 
     // Send an email to the citizen — never let an email failure block the response
     Citizen.findById(complaint.citizen)

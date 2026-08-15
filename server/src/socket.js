@@ -51,4 +51,12 @@ const notifyCitizen = (citizenId, event, payload) => {
   }
 };
 
-module.exports = { init, getIO, notifyCitizen };
+const broadcastGlobal = (event, payload) => {
+  try {
+    getIO().emit(event, payload);
+  } catch (error) {
+    console.error("Global socket emit failed:", error.message);
+  }
+};
+
+module.exports = { init, getIO, notifyCitizen, broadcastGlobal };
