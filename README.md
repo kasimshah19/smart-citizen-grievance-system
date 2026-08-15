@@ -89,6 +89,7 @@ The system is fully deployed and ready for testing. You can explore the citizen,
 | JSON Web Token | 9.0 | Stateless authentication |
 | bcrypt.js | 3.0 | Password hashing |
 | Multer | 2.2 | Multipart file upload handling |
+| Cloudinary | HTTP API | Permanent Image Storage for Complaints |
 | Brevo | HTTP API | Email OTP delivery (Bypasses local SMTP blocks) |
 | node-cron | 4.6 | Scheduled task management |
 
@@ -356,6 +357,9 @@ Open **http://localhost:5173** in your browser.
 | `JWT_SECRET` | Secret key for JWT signing | `your_super_secret_key` |
 | `BREVO_API_KEY` | API Key for Brevo HTTP Email Service | `xkeysib-your_api_key` |
 | `BREVO_SENDER_EMAIL` | Verified sender email on Brevo | `your_email@gmail.com` |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary Account Cloud Name | `your_cloud_name` |
+| `CLOUDINARY_API_KEY` | Cloudinary Account API Key | `your_api_key` |
+| `CLOUDINARY_API_SECRET`| Cloudinary Account API Secret| `your_api_secret` |
 | `CLIENT_URL` | Frontend URL for CORS | `https://your-frontend.vercel.app` |
 
 ### Client (`.env` or Vercel Dashboard)
