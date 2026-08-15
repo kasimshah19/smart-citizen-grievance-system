@@ -5,6 +5,7 @@ import api from "../services/api";
 import { COMPLAINT_CATEGORIES, STATUS_COLORS } from "../constants/complaint.constants";
 import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
+import { Helmet } from "react-helmet-async";
 
 function PublicFeedPage() {
   const [complaints, setComplaints] = useState([]);
@@ -74,6 +75,11 @@ function PublicFeedPage() {
 
   return (
     <div className="min-h-screen bg-paper">
+      <Helmet>
+        <title>Community Feed | Nagrik</title>
+        <meta name="description" content="View civic issues reported by citizens in your area. An anonymized community feed tracking neighborhood repairs." />
+      </Helmet>
+
       {/* Public header — same style as the landing page */}
       <header className="border-b border-line bg-paper">
         <div className="max-w-5xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">

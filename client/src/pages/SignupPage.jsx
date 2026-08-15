@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
 import { useTranslation } from "react-i18next";
+import { Helmet } from "react-helmet-async";
 
 function SignupPage() {
   const navigate = useNavigate();
@@ -99,6 +100,11 @@ function SignupPage() {
 
   return (
     <div className="min-h-screen bg-ink flex items-center justify-center px-4 py-12">
+      <Helmet>
+        <title>Create Citizen Account | Nagrik</title>
+        <meta name="description" content="Register as a citizen on Nagrik to report, track, and resolve civic governance issues in your neighborhood." />
+      </Helmet>
+
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
           <Link to="/" className="font-display text-2xl text-paper">

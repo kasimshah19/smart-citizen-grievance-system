@@ -4,6 +4,7 @@ import api from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 import { ROLES } from "../shared/constants/roles";
 import { useTranslation } from "react-i18next";
+import { Helmet } from "react-helmet-async";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -62,6 +63,11 @@ function LoginPage() {
 
   return (
     <div className="min-h-screen bg-ink flex flex-col items-center justify-center px-4 py-12 gap-8">
+      <Helmet>
+        <title>Citizen Log In | Nagrik</title>
+        <meta name="description" content="Log in to your Nagrik citizen account to track your submitted complaints and community points." />
+      </Helmet>
+
       <Link to="/" className="font-display text-2xl text-paper">
         Nagrik<span className="text-signal">.</span>
       </Link>

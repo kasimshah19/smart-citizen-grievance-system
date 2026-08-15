@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
+import { Helmet } from "react-helmet-async";
 
 function HomePage() {
   const { citizen, logout } = useAuth();
@@ -13,6 +14,11 @@ function HomePage() {
 
   return (
     <div className="min-h-screen bg-paper flex flex-col">
+      <Helmet>
+        <title>Nagrik | Smart Citizen Grievance Registry</title>
+        <meta name="description" content="A direct line between citizens and departments responsible for fixing what's broken in your neighborhood. Report and track civic issues." />
+      </Helmet>
+
       <header className="border-b border-line px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
         <span className="font-display text-lg tracking-tight text-ink">
           Nagrik<span className="text-signal">.</span>
