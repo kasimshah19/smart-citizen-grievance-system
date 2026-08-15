@@ -19,10 +19,11 @@
 
 The system is fully deployed and ready for testing. You can explore the citizen, admin, and employee portals using the live application link below.
 
-| Component | Status | Environment | Access Link |
-|-----------|--------|-------------|-------------|
-| **Frontend UI (App)** | 🟢 Online | Vercel | [smart-citizen-grievance-system.vercel.app](https://smart-citizen-grievance-system.vercel.app) |
-| **Backend (API)** | 🟢 Online | Render | [smart-citizen-grievance-system.onrender.com](https://smart-citizen-grievance-system.onrender.com) |
+| Component | Status | Environment | Access Details |
+|-----------|--------|-------------|----------------|
+| **Frontend UI (App)** | Active & Deployed | Vercel | Publicly accessible at: [smart-citizen-grievance-system.vercel.app](https://smart-citizen-grievance-system.vercel.app) |
+| **Backend (API)** | Active & Deployed | Render | Publicly accessible at: [smart-citizen-grievance-system.onrender.com](https://smart-citizen-grievance-system.onrender.com) |
+| **Database** | Secured & Connected | MongoDB Atlas | Private Cluster (URL restricted for security purposes) |
 
 > **Note:** The backend API is hosted on Render's free tier, which sleeps after 15 minutes of inactivity. **The first request might take 30-50 seconds** to wake up the server. Subsequent requests will be fast.
 
