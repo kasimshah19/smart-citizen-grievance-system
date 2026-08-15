@@ -460,12 +460,17 @@ This project is licensed under the **ISC License**.
 
 ---
 
-## 👤 Author
+## 👨‍💻 Author
 
-**Kasim Shah**
+**Kasim Shah** — *Full-Stack Developer*
 
-- GitHub: [@kasimshah19](https://github.com/kasimshah19)
-- Email: kasimshah998@gmail.com
+A passionate Full-Stack Developer specializing in the MERN stack. I focus on building scalable web applications, robust APIs, and modern, interactive user interfaces that solve real-world problems.
+
+| 🌐 Contact & Profiles | 🔗 Link / Detail |
+|-----------------------|------------------|
+| **GitHub**            | [@kasimshah19](https://github.com/kasimshah19) |
+| **Email**             | [kasimshah998@gmail.com](mailto:kasimshah998@gmail.com) |
+| **Role**              | Full-Stack MERN Developer |
 
 ---
 
