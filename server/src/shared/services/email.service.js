@@ -15,6 +15,9 @@ const getTransporter = () => {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
+      connectionTimeout: 5000, // Fail fast in 5 seconds if SMTP is blocked (e.g. Render)
+      greetingTimeout: 5000,
+      socketTimeout: 5000,
     });
   }
 
@@ -43,6 +46,7 @@ const sendEmail = async (to, subject, message) => {
     return { success: true, mode: "smtp" };
   } catch (error) {
     console.error("Failed to send email:", error.message);
+    console.log(`\n[EMAIL BLOCKED - FALLBACK for ${to}]: ${subject}\n${message}\n`);
     return { success: false, error: error.message };
   }
 };

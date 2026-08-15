@@ -22,7 +22,15 @@ const createAndSendOtp = async (email, purpose) => {
     }
   }
 
-  const otpCode = generateOtpCode();
+  let otpCode;
+  let isDemo = email.toLowerCase() === "demo@gmail.com";
+
+  if (isDemo) {
+    otpCode = "123456";
+  } else {
+    otpCode = generateOtpCode();
+  }
+
   const otpHash = await bcrypt.hash(otpCode, 10);
   const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
@@ -36,8 +44,12 @@ const createAndSendOtp = async (email, purpose) => {
     lastSentAt: new Date(),
   });
 
-  const message = `Your Smart Citizen Grievance System verification code is: <strong>${otpCode}</strong>.<br/><br/>It will expire in ${OTP_EXPIRY_MINUTES} minutes.`;
-  await sendEmail(email, "Your Verification OTP code", message);
+  if (!isDemo) {
+    const message = `Your Smart Citizen Grievance System verification code is: <strong>${otpCode}</strong>.<br/><br/>It will expire in ${OTP_EXPIRY_MINUTES} minutes.`;
+    await sendEmail(email, "Your Verification OTP code", message);
+  } else {
+    console.log(`\n[DEMO MODE OTP]: Sent 123456 virtually to ${email}\n`);
+  }
 
   return { success: true, message: "OTP sent successfully to your email" };
 };
