@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { Menu, Search, Bell, ChevronDown } from "lucide-react";
+import { Menu, Search, Bell, ChevronDown, Moon, Sun } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 
 function EmployeeTopNav({ onMenuClick, breadcrumb }) {
   const { citizen, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -70,6 +72,13 @@ function EmployeeTopNav({ onMenuClick, breadcrumb }) {
       </div>
 
       <div className="flex items-center gap-3">
+        <button
+          onClick={toggleTheme}
+          className="p-2 rounded-full hover:bg-ink/5 text-ink transition-colors"
+        >
+          {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
+        </button>
+
         <button onClick={handleBellClick} className="relative p-2 rounded-full hover:bg-ink/5" title="Pending complaints">
           <Bell size={20} className="text-ink" />
           {pendingCount > 0 && (
