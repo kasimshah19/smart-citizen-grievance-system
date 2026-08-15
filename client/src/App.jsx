@@ -33,217 +33,221 @@ import EmployeeComplaintsPage from "./pages/EmployeeComplaintsPage";
 import EmployeeComplaintDetailPage from "./pages/EmployeeComplaintDetailPage";
 import EmployeeProfilePage from "./pages/EmployeeProfilePage";
 import EmployeeSettingsPage from "./pages/EmployeeSettingsPage";
+import PwaInstallPrompter from "./components/common/PwaInstallPrompter";
 import "./App.css";
 
 function App() {
   return (
-    <Routes>
-      {/* Public */}
-      <Route path="/" element={<HomePage />} />
-      <Route path="/community" element={<PublicFeedPage />} />
-      <Route path="/signup" element={<SignupPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/unauthorized" element={<UnauthorizedPage />} />
+    <>
+      <PwaInstallPrompter />
+      <Routes>
+        {/* Public */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/community" element={<PublicFeedPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-      {/* Citizen Portal */}
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/dashboard/new-complaint"
-        element={
-          <ProtectedRoute>
-            <NewComplaintPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/dashboard/complaints"
-        element={
-          <ProtectedRoute>
-            <MyComplaintsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/dashboard/complaints/:id"
-        element={
-          <ProtectedRoute>
-            <ComplaintDetailPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/dashboard/notifications"
-        element={
-          <ProtectedRoute>
-            <NotificationsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/dashboard/profile"
-        element={
-          <ProtectedRoute>
-            <ProfilePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/dashboard/settings"
-        element={
-          <ProtectedRoute>
-            <SettingsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/dashboard/help"
-        element={
-          <ProtectedRoute>
-            <HelpSupportPage />
-          </ProtectedRoute>
-        }
-      />
+        {/* Citizen Portal */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/new-complaint"
+          element={
+            <ProtectedRoute>
+              <NewComplaintPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/complaints"
+          element={
+            <ProtectedRoute>
+              <MyComplaintsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/complaints/:id"
+          element={
+            <ProtectedRoute>
+              <ComplaintDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/notifications"
+          element={
+            <ProtectedRoute>
+              <NotificationsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/settings"
+          element={
+            <ProtectedRoute>
+              <SettingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/help"
+          element={
+            <ProtectedRoute>
+              <HelpSupportPage />
+            </ProtectedRoute>
+          }
+        />
 
-      {/* Admin Portal */}
-      <Route
-        path="/admin"
-        element={
-          <AdminRoute>
-            <AdminDashboardPage />
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/complaints"
-        element={
-          <AdminRoute>
-            <AdminComplaintsPage />
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/complaints/:id"
-        element={
-          <AdminRoute>
-            <AdminComplaintDetailPage />
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/departments"
-        element={
-          <AdminRoute>
-            <AdminDepartmentsPage />
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/map"
-        element={
-          <AdminRoute>
-            <AdminMapPage />
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/employees"
-        element={
-          <AdminRoute>
-            <AdminEmployeesPage />
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/users"
-        element={
-          <AdminRoute>
-            <AdminUsersPage />
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/announcements"
-        element={
-          <AdminRoute>
-            <AdminAnnouncementsPage />
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/support-tickets"
-        element={
-          <AdminRoute>
-            <AdminSupportTicketsPage />
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/analytics"
-        element={
-          <AdminRoute>
-            <AdminAnalyticsPage />
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/settings"
-        element={
-          <AdminRoute>
-            <AdminSettingsPage />
-          </AdminRoute>
-        }
-      />
+        {/* Admin Portal */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminDashboardPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/complaints"
+          element={
+            <AdminRoute>
+              <AdminComplaintsPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/complaints/:id"
+          element={
+            <AdminRoute>
+              <AdminComplaintDetailPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/departments"
+          element={
+            <AdminRoute>
+              <AdminDepartmentsPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/map"
+          element={
+            <AdminRoute>
+              <AdminMapPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/employees"
+          element={
+            <AdminRoute>
+              <AdminEmployeesPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <AdminRoute>
+              <AdminUsersPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/announcements"
+          element={
+            <AdminRoute>
+              <AdminAnnouncementsPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/support-tickets"
+          element={
+            <AdminRoute>
+              <AdminSupportTicketsPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/analytics"
+          element={
+            <AdminRoute>
+              <AdminAnalyticsPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/settings"
+          element={
+            <AdminRoute>
+              <AdminSettingsPage />
+            </AdminRoute>
+          }
+        />
 
-      {/* Employee Portal */}
-      <Route
-        path="/employee"
-        element={
-          <EmployeeRoute>
-            <EmployeeDashboardPage />
-          </EmployeeRoute>
-        }
-      />
-      <Route
-        path="/employee/complaints"
-        element={
-          <EmployeeRoute>
-            <EmployeeComplaintsPage />
-          </EmployeeRoute>
-        }
-      />
-      <Route
-        path="/employee/complaints/:id"
-        element={
-          <EmployeeRoute>
-            <EmployeeComplaintDetailPage />
-          </EmployeeRoute>
-        }
-      />
-      <Route
-        path="/employee/profile"
-        element={
-          <EmployeeRoute>
-            <EmployeeProfilePage />
-          </EmployeeRoute>
-        }
-      />
-      <Route
-        path="/employee/settings"
-        element={
-          <EmployeeRoute>
-            <EmployeeSettingsPage />
-          </EmployeeRoute>
-        }
-      />
-    </Routes>
+        {/* Employee Portal */}
+        <Route
+          path="/employee"
+          element={
+            <EmployeeRoute>
+              <EmployeeDashboardPage />
+            </EmployeeRoute>
+          }
+        />
+        <Route
+          path="/employee/complaints"
+          element={
+            <EmployeeRoute>
+              <EmployeeComplaintsPage />
+            </EmployeeRoute>
+          }
+        />
+        <Route
+          path="/employee/complaints/:id"
+          element={
+            <EmployeeRoute>
+              <EmployeeComplaintDetailPage />
+            </EmployeeRoute>
+          }
+        />
+        <Route
+          path="/employee/profile"
+          element={
+            <EmployeeRoute>
+              <EmployeeProfilePage />
+            </EmployeeRoute>
+          }
+        />
+        <Route
+          path="/employee/settings"
+          element={
+            <EmployeeRoute>
+              <EmployeeSettingsPage />
+            </EmployeeRoute>
+          }
+        />
+      </Routes>
+    </>
   );
 }
 
