@@ -53,7 +53,7 @@ The system is fully deployed and ready for testing. You can explore the citizen,
 | **Citizen Portal** | File complaints with photo evidence & GPS location, track status in real-time, view complaint history timeline, join existing complaints, rate resolved complaints, manage profile & notification preferences |
 | **Admin Portal** | Comprehensive dashboard with analytics & KPIs, manage complaints (assign, escalate, resolve), department & employee CRUD management, geo-mapped complaint visualization (Leaflet), user management with status toggle, publish announcements, handle support tickets, export data (PDF/Excel) |
 | **Employee Portal** | View assigned complaints, update complaint status with notes, personal dashboard with workload stats, profile management |
-| **Authentication** | OTP-based registration & login via SMS, JWT access tokens with middleware protection, forgot password flow with OTP verification, role-based access control (Citizen / Admin / Employee) |
+| **Authentication** | OTP-based registration & login via Email (Brevo API), JWT access tokens with middleware protection, forgot password flow with OTP verification, role-based access control (Citizen / Admin / Employee) |
 | **Real-Time** | Socket.io powered live notification delivery, instant complaint status update push to citizens |
 | **Smart Features** | Duplicate complaint detection, SLA tracking (7-day overdue alerts), emergency mode for critical complaints, community feed for public complaints |
 | **PWA** | Installable as a mobile app, service worker for offline support, responsive design for all devices |
@@ -88,8 +88,7 @@ The system is fully deployed and ready for testing. You can explore the citizen,
 | JSON Web Token | 9.0 | Stateless authentication |
 | bcrypt.js | 3.0 | Password hashing |
 | Multer | 2.2 | Multipart file upload handling |
-| Nodemailer | 9.0 | Email notifications |
-| Fast2SMS | — | OTP delivery via SMS |
+| Brevo | HTTP API | Email OTP delivery (Bypasses local SMTP blocks) |
 | node-cron | 4.6 | Scheduled task management |
 
 ### Infrastructure
@@ -354,10 +353,8 @@ Open **http://localhost:5173** in your browser.
 | `PORT` | Server port | `5000` |
 | `MONGO_URI` | MongoDB connection string | `mongodb+srv://user:pass@cluster.mongodb.net/` |
 | `JWT_SECRET` | Secret key for JWT signing | `your_super_secret_key` |
-| `EMAIL_USER` | Gmail address for Nodemailer | `your_email@gmail.com` |
-| `EMAIL_PASS` | Gmail App Password (not regular password) | `xxxx xxxx xxxx xxxx` |
-| `SMS_PROVIDER` | SMS service provider | `fast2sms` |
-| `FAST2SMS_API_KEY` | Fast2SMS API key for OTP delivery | `your_api_key` |
+| `BREVO_API_KEY` | API Key for Brevo HTTP Email Service | `xkeysib-your_api_key` |
+| `BREVO_SENDER_EMAIL` | Verified sender email on Brevo | `your_email@gmail.com` |
 | `CLIENT_URL` | Frontend URL for CORS | `https://your-frontend.vercel.app` |
 
 ### Client (`.env` or Vercel Dashboard)
@@ -425,7 +422,7 @@ smart-citizen-grievance-system/
 │   │   │   └── support/             # Support ticket system
 │   │   ├── shared/
 │   │   │   ├── constants/           # Roles, departments, priorities, statuses
-│   │   │   ├── services/            # Email service (Nodemailer)
+│   │   │   ├── services/            # Email service (Brevo HTTP API via fetch)
 │   │   │   └── utils/               # SLA tracking utility
 │   │   ├── server.js                # Express app setup, CORS, routes
 │   │   └── socket.js                # Socket.io initialization & helpers
