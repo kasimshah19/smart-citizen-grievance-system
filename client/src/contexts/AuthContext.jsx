@@ -10,7 +10,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const initAuth = async () => {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       if (!token) {
         setLoading(false);
@@ -21,12 +21,12 @@ export function AuthProvider({ children }) {
         // Always fetch the full, up-to-date profile from the backend
         const res = await api.get("/api/auth/me");
         setCitizen(res.data.citizen);
-        localStorage.setItem("citizen", JSON.stringify(res.data.citizen));
+        sessionStorage.setItem("citizen", JSON.stringify(res.data.citizen));
         connectSocket();
       } catch (error) {
         // Token invalid or expired — clear stale session
-        localStorage.removeItem("token");
-        localStorage.removeItem("citizen");
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("citizen");
         setCitizen(null);
       } finally {
         setLoading(false);
@@ -37,28 +37,28 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (citizenData, token) => {
-    localStorage.setItem("token", token);
+    sessionStorage.setItem("token", token);
     try {
       // Fetch the complete profile right after login, not just the partial login response
       const res = await api.get("/api/auth/me");
-      localStorage.setItem("citizen", JSON.stringify(res.data.citizen));
+      sessionStorage.setItem("citizen", JSON.stringify(res.data.citizen));
       setCitizen(res.data.citizen);
     } catch (error) {
-      localStorage.setItem("citizen", JSON.stringify(citizenData));
+      sessionStorage.setItem("citizen", JSON.stringify(citizenData));
       setCitizen(citizenData);
     }
     connectSocket();
   };
 
   const logout = () => {
-    localStorage.removeItem("citizen");
-    localStorage.removeItem("token");
+    sessionStorage.removeItem("citizen");
+    sessionStorage.removeItem("token");
     setCitizen(null);
     disconnectSocket();
   };
 
   const updateCitizen = (updatedData) => {
-    localStorage.setItem("citizen", JSON.stringify(updatedData));
+    sessionStorage.setItem("citizen", JSON.stringify(updatedData));
     setCitizen(updatedData);
   };
 
