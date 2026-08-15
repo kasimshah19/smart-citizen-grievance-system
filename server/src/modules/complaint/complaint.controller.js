@@ -2,6 +2,7 @@ const Complaint = require("./complaint.model");
 const ComplaintHistory = require("./complaintHistory.model");
 const Notification = require("../notification/notification.model");
 const { generateComplaintNumber, distanceInMeters } = require("./complaint.utils");
+const { analyzeComplaintPriority } = require("../../shared/services/ai.service");
 
 // How close two complaints need to be (in meters) to be considered the same real-world issue
 const DUPLICATE_RADIUS_METERS = 200;
@@ -28,6 +29,10 @@ const createComplaint = async (req, res) => {
       if (!existing) isUnique = true;
     }
 
+    // AI-Powered Priority Assignment (Groq API)
+    // Runs dynamically based on Title and Description
+    const detectedPriority = await analyzeComplaintPriority(title, description);
+
     const complaint = await Complaint.create({
       complaintNumber,
       citizen: req.citizen._id,
@@ -36,7 +41,7 @@ const createComplaint = async (req, res) => {
       description,
       location: { address, latitude, longitude },
       photoUrl,
-      priority: priority || "Medium",
+      priority: detectedPriority,
     });
 
     // Record the initial history entry — the single source of truth for this complaint's timeline
@@ -46,7 +51,7 @@ const createComplaint = async (req, res) => {
       action: "Complaint Submitted",
       performedBy: req.citizen._id,
       performerRole: "Citizen",
-      remarks: "Complaint registered by citizen",
+      remarks: `Complaint registered by citizen. AI auto-assigned priority as: ${detectedPriority}`,
     });
 
     await Notification.create({

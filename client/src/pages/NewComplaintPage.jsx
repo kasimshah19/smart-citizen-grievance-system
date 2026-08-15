@@ -14,7 +14,6 @@ function NewComplaintPage() {
     title: "",
     description: "",
     address: "",
-    priority: "Medium",
   });
   const [coords, setCoords] = useState({ latitude: null, longitude: null });
   const [photo, setPhoto] = useState(null);
@@ -204,7 +203,6 @@ function NewComplaintPage() {
       payload.append("title", formData.title);
       payload.append("description", formData.description);
       payload.append("address", formData.address);
-      payload.append("priority", formData.priority);
       if (coords.latitude) payload.append("latitude", coords.latitude);
       if (coords.longitude) payload.append("longitude", coords.longitude);
       if (photo) payload.append("photo", photo);
@@ -453,27 +451,13 @@ function NewComplaintPage() {
             )}
           </div>
 
-          <div>
-            <label className="block text-sm text-ink mb-1.5">
-              Priority <span className="text-error">*</span>
-            </label>
-            <div className="flex gap-2">
-              {PRIORITY_LEVELS.map((level) => (
-                <button
-                  key={level}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, priority: level })}
-                  className={`flex-1 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
-                    formData.priority === level
-                      ? level === "Emergency"
-                        ? "bg-error text-paper border-error"
-                        : "bg-ink text-paper border-ink"
-                      : "border-line text-ink hover:border-ink"
-                  }`}
-                >
-                  {level}
-                </button>
-              ))}
+          <div className="bg-signal/5 border-l-4 border-signal rounded-r-lg px-4 py-3 flex items-start gap-3 mt-4">
+            <Sparkles size={18} className="text-signal shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-ink">Smart Priority Detection</p>
+              <p className="text-xs text-slate mt-0.5">
+                Our AI will read your title and description to automatically assign the appropriate urgency level (Low to Emergency).
+              </p>
             </div>
           </div>
 
