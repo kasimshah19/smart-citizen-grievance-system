@@ -59,8 +59,9 @@ The system is fully deployed and ready for testing. You can explore the citizen,
 | **Authentication** | OTP-based registration & login via Email (Brevo API), JWT access tokens with middleware protection, forgot password flow with OTP verification, role-based access control (Citizen / Admin / Employee) |
 | **Real-Time** | Socket.io powered live notification delivery, instant complaint status update push to citizens |
 | **Smart Features** | Duplicate complaint detection, SLA tracking (7-day overdue alerts), emergency mode for critical complaints, community feed for public complaints |
-| **UX/UI** | Enterprise Dark Mode (Tailwind v4 variables), Multi-language Support (i18next with English/Hindi offline persistence) |
-| **PWA** | Installable as a mobile app, service worker for offline support, responsive design for all devices |
+| **SEO & Brand** | Dynamic SPA SEO with `react-helmet-async`, automated `sitemap.xml` & `robots.txt`, extreme `JSON-LD` schemas (Google Rich Results), canonical injection, and custom SVG vector branding mapped across all PWA icon sets |
+| **UX/UI** | Enterprise Dark Mode (Tailwind v4 variables), Multi-language Support (i18next with English/Hindi switching triggering dynamic HTML lang tagging) |
+| **PWA** | Installable as a mobile app, service worker for offline support, responsive mobile-first flex design for all micro-devices |
 
 ---
 
@@ -80,6 +81,7 @@ The system is fully deployed and ready for testing. You can explore the citizen,
 | Leaflet + React Leaflet | 1.9 / 5.0 | Interactive geo-mapped complaint visualization |
 | Lucide React | 1.25 | Modern icon library |
 | i18next | 24.2 | Internationalization (English/Hindi Support) |
+| react-helmet-async | 2.0 | Dynamic Route SEO Tagging and Canonicals |
 | jsPDF + ExcelJS | 4.2 / 4.4 | PDF & Excel report generation |
 
 ### Backend
