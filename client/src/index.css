@@ -16,6 +16,18 @@
   --font-mono: 'IBM Plex Mono', monospace;
 }
 
+@layer base {
+  .dark {
+    --color-ink: #F7F4EC;
+    --color-paper: #101B26;
+    --color-signal: #E1774F;
+    --color-signal-dark: #C1552C;
+    --color-slate: #8A9CA9;
+    --color-line: #2D3A44;
+  }
+}
+
+
 body {
   background-color: var(--color-paper);
   color: var(--color-ink);
