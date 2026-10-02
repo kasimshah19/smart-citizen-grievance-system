@@ -15,6 +15,65 @@
 
 > **A full-stack civic grievance management platform** that bridges the gap between citizens and government departments. Citizens can report infrastructure issues, track complaint progress in real-time, and rate resolutions — while admins and employees manage, assign, and resolve complaints through dedicated dashboards.
 
+## 📖 Overview
+
+In traditional grievance handling systems, citizens may face difficulties while reporting public issues, identifying the appropriate government department, following up on complaints, and understanding the current status of their requests.
+
+At the same time, government departments need an organized mechanism to receive, categorize, assign, prioritize, and monitor citizen grievances.
+
+Nagrik addresses these challenges by providing a centralized grievance management platform.
+
+The system connects citizens with the appropriate government authorities and provides visibility throughout the grievance lifecycle.
+
+## 🚨 Problem Statement
+
+The traditional grievance management process can create communication and accountability gaps between citizens and government authorities.
+
+**Problems faced by citizens**
+- Citizens may need to visit government offices to report certain issues.
+- It may not always be clear which department is responsible for a particular problem.
+- After submitting a complaint, citizens may have limited visibility into its current status.
+- Following up on unresolved complaints can be difficult.
+- Citizens may not receive timely updates about actions taken on their grievances.
+- Communication can be fragmented across different channels.
+
+**Problems faced by government departments**
+- Large numbers of grievances can be difficult to organize manually.
+- Assigning complaints to the appropriate department or officer can become inefficient.
+- Tracking pending and resolved grievances can be challenging.
+- Prioritizing issues based on urgency and category may require additional effort.
+- Maintaining a centralized history of grievance actions can be difficult.
+- Lack of structured data can make monitoring and reporting harder.
+
+## 💡 Solution
+
+Nagrik provides a centralized digital platform where citizens can submit grievances and government authorities can manage them through a structured workflow.
+
+The platform enables:
+- Digital grievance submission
+- Categorization of public issues
+- Department-wise grievance management
+- Officer assignment
+- Status tracking
+- Resolution updates
+- Centralized grievance history
+- Role-based access control
+- Secure authentication and authorization
+- Transparent communication between citizens and authorities
+
+The objective is not simply to provide a complaint form, but to create a complete grievance lifecycle management system.
+
+## 🎯 Objectives
+
+The primary objectives of Nagrik are:
+
+- **Digitize grievance submission**: Allow citizens to report public issues through a centralized platform.
+- **Improve transparency**: Allow citizens to track the progress of their submitted grievances.
+- **Improve accountability**: Maintain ownership and status information for grievances.
+- **Streamline government workflows**: Help administrators and departments organize and assign grievances efficiently.
+- **Implement secure authorization**: Ensure that users can access only the resources and operations permitted by their roles.
+- **Centralize grievance data**: Maintain structured records of complaints, assignments, actions, and resolutions.
+
 ## 🌐 Live Deployments
 
 The system is fully deployed and ready for testing. You can explore the citizen, admin, and employee portals using the live application link below.
@@ -31,6 +90,10 @@ The system is fully deployed and ready for testing. You can explore the citizen,
 
 ## 📋 Table of Contents
 
+- [Overview](#-overview)
+- [Problem Statement](#-problem-statement)
+- [Solution](#-solution)
+- [Objectives](#-objectives)
 - [Key Features](#-key-features)
 - [Tech Stack](#-tech-stack)
 - [Architecture](#-architecture)
@@ -48,6 +111,25 @@ The system is fully deployed and ready for testing. You can explore the citizen,
 ---
 
 ## ✨ Key Features
+
+### 👤 Citizen Features
+Citizens can:
+- Register and authenticate securely.
+- Submit new grievances by selecting the appropriate category and providing issue details.
+- Track submitted grievances and view their status.
+- View updates and resolution information.
+- Monitor the complete history of their grievances.
+
+### 🏛️ Government / Admin Features
+Authorized government users can:
+- View incoming grievances.
+- Categorize and manage grievances.
+- Assign grievances to relevant departments or officers.
+- Update grievance status and add action or resolution updates.
+- Monitor pending grievances and track progress.
+- Manage users and administrative resources according to their permissions.
+
+### 💻 System Capabilities
 
 | Category | Features |
 |----------|----------|
@@ -471,18 +553,16 @@ This project is licensed under the **ISC License**.
 
 ## 👨‍💻 Author
 
-**Kasim Shah** — *Full-Stack Developer*
+**Kasim Shah**
 
-A passionate Full-Stack Developer specializing in the MERN stack. I focus on building scalable web applications, robust APIs, and modern, interactive user interfaces that solve real-world problems.
-
-| 🌐 Contact & Profiles | 🔗 Link / Detail |
-|-----------------------|------------------|
-| **GitHub**            | [@kasimshah19](https://github.com/kasimshah19) |
-| **Email**             | [kasimshah998@gmail.com](mailto:kasimshah998@gmail.com) |
-| **Role**              | Full-Stack MERN Developer |
+**Connect with me:**
+- **Portfolio:** [kasim-portfolio-umber.vercel.app](https://kasim-portfolio-umber.vercel.app/)
+- **LinkedIn:** [Kasim Shah](https://www.linkedin.com/in/kasim-shah-176175340/)
+- **GitHub:** [@kasimshah19](https://github.com/kasimshah19)
 
 ---
 
 <p align="center">
+  © 2026 Nagrik — Smart Citizen Grievance System — All rights reserved<br>
   <sub>Built with ❤️ using the MERN Stack</sub>
 </p>
